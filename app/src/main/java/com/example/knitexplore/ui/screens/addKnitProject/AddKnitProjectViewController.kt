@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
@@ -14,6 +15,7 @@ import java.util.Locale
 
 class AddKnitProjectViewController : ViewModel() {
     var imageUriState by  mutableStateOf<Uri?>(null)
+    var projectName by mutableStateOf("")
     private var storageRef = Firebase.storage.reference
 
     fun setImageUri (uri : Uri) {
