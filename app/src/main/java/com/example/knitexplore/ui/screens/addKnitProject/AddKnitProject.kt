@@ -9,13 +9,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,29 +27,25 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
-
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -60,18 +56,22 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
-import kotlinx.coroutines.launch
+import com.example.knitexplore.ui.theme.softerOrangeColor
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 @Composable
 fun AddKnitProject () {
 
+    val auth = Firebase.auth
+    val currentUser = auth.currentUser
+    Log.d("!!!", "currentUser ${currentUser?.uid}")
+
+
 
     val viewModel : AddKnitProjectViewModel = viewModel()
     val listState = rememberLazyListState()
-    val needleSizes: MutableList<Double?> = MutableList(viewModel.numberOfNeedleSizes) { 0.0 }
-    val myList: List<Int> = mutableListOf()
-    val variableList: MutableList<MutableState<Int>> = mutableListOf()
-
+    val coroutineScope = rememberCoroutineScope()
 
     val singlePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -83,55 +83,22 @@ fun AddKnitProject () {
         }
     )
 
-    fun addNewVariable() {
-        variableList.add(mutableIntStateOf(0))
+    fun logInAnonymously () {
+        auth.signInAnonymously()
+            .addOnCompleteListener {task ->
+                if (task.isSuccessful) {
+                    Log.d("!!!", "signInAnonymously:success")
+                    val user = auth.currentUser
+                    Log.d("!!!", "uid: ${user?.uid}")
+                } else {
+                    Log.w("!!!", "signInAnonymously:failure", task.exception)
+                }
+            }
     }
 
-    val coroutineScope = rememberCoroutineScope()
-
-
-    var garnList by remember { mutableStateOf(mutableListOf("hej")) }
-
-   /* Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        garnList.forEachIndexed { index, garn ->
-            var text = remember { mutableStateOf("")}
-            Log.d("!!!", "value: $garn")
-
-            OutlinedTextField(
-                value = text.value,
-                onValueChange = { newGarn ->
-                    Log.d("!!!", "newGarn: $newGarn")
-                    text.value = newGarn
-                },
-                label = { Text("Garn") },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Text
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { *//* Perform action when Done button on keyboard is clicked *//* }
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-        }
-
-        Button(
-            onClick = {
-                garnList.add("")
-            },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Text("Lägg till garn")
-        }
-    }*/
-
-
+    if (currentUser == null) {
+        logInAnonymously()
+    }
 
     LazyColumn(
         state = listState,
@@ -164,16 +131,14 @@ fun AddKnitProject () {
                 }
             }
         }
-        item {
 
-        }
         item {
             TextInput(
                 viewModel = viewModel,
                 value = viewModel.projectName,
                 label = "Enter your project",
                 onValueChange = { newText -> viewModel.projectName = newText},
-                onDone = {}
+                onNext = {}
             )
         }
 
@@ -183,26 +148,33 @@ fun AddKnitProject () {
                 value = viewModel.patternName,
                 label = "Enter pattern name",
                 onValueChange = { newText -> viewModel.patternName = newText },
-                onDone = {}
+                onNext = {}
             )
         }
 
         item {
             repeat(viewModel.numberOfNeedleSizes) {
-                val text = remember { mutableDoubleStateOf(3.5) }
+
+                val text = remember { mutableDoubleStateOf(0.0) }
                 TextInput(viewModel = viewModel,
                     value = text.doubleValue.toString(),
                     label = "Needle size",
-                    onValueChange = {newValue ->
-                        if (newValue.matches(Regex("^\\d*\\.?\\d?\$"))) {
+                    onValueChange = { newValue ->
+                       // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
+                        if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
+                            // TODO Review regex, doesn't work to change the number after the decimal
                             text.doubleValue = newValue.toDouble()
                         } },
-                    onDone = {viewModel.addNeedleSize(text.doubleValue.toString())})
+
+                    onNext = {viewModel.addNeedleSize(text.doubleValue.toString())})
             }
         }
 
         item {
-          AddNeedleBtn(viewModel = viewModel) {
+
+            // TODO Check if the user has saved the previous needle sizes, otherwise the button should not be enabled
+            AddBtnWithIcon(btnText = "Add needle") {
+              viewModel.increaseNumberNeedleSizes()
               /*coroutineScope.launch {
                   listState.scrollToItem(index = viewModel.numberOfNeedleSizes, scrollOffset = 50)
               }*/
@@ -216,6 +188,34 @@ fun AddKnitProject () {
         }
 
         item {
+            repeat(viewModel.numberOfYarns) {
+                val text = remember { mutableStateOf("") }
+                TextInput(
+                    viewModel = viewModel,
+                    value = text.value,
+                    label = "Enter yarn you used",
+                    onValueChange = {newText -> text.value = newText},
+                    onNext = {
+                        viewModel.addYarn(text.value)
+                    Log.d("!!!", "Nästa rad körs, yarn")})
+            }
+        }
+        item {
+            // TODO Check if the user has saved the previous yarn, otherwise the button should not be enabled
+
+            AddBtnWithIcon(btnText = "Add yarn") {
+                viewModel.increaseNumberYarns()
+            }
+        }
+
+        item {
+            ProjectNotesInput(notes = viewModel.projectNotes,
+                onNotesChange = {
+                    viewModel.projectNotes = it
+                })
+        }
+
+        item {
             SaveBtn(viewModel = viewModel)
         }
         item {
@@ -224,29 +224,6 @@ fun AddKnitProject () {
     }
 }
 
-@Composable
-fun GarnTextField(
-    garn: String,
-    onGarnChanged: (String) -> Unit
-) {
-    OutlinedTextField(
-        value = garn,
-        onValueChange = { newGarn ->
-            onGarnChanged(newGarn)
-        },
-        label = { Text("Garn") },
-        keyboardOptions = KeyboardOptions.Default.copy(
-            imeAction = ImeAction.Done,
-            keyboardType = KeyboardType.Text
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { /* Perform action when Done button on keyboard is clicked */ }
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-    )
-}
 @Composable
 fun GaugeTitle () {
     Row (modifier = Modifier
@@ -265,15 +242,19 @@ fun GaugeTitle () {
 
 @Composable
 fun GaugeInputs (viewModel: AddKnitProjectViewModel) {
+
     Row (
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         GaugeInput(
             value = viewModel.stitchesAmount,
-            onValueChange = {newText -> viewModel.stitchesAmount = newText})
+            onValueChange = {newText -> viewModel.stitchesAmount = newText}
+        )
+
         Spacer(modifier = Modifier.width(5.dp))
         Text(text = "Stitches in")
         Spacer(modifier = Modifier.width(5.dp))
@@ -287,6 +268,27 @@ fun GaugeInputs (viewModel: AddKnitProjectViewModel) {
 }
 
 @Composable
+fun ProjectNotesInput(
+    notes: String,
+    onNotesChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = notes,
+        label = {Text("Project notes")},
+        onValueChange = onNotesChange,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp, vertical = 20.dp)
+            .heightIn(min = 100.dp),
+        textStyle = TextStyle.Default.copy(color = Color.Black),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Done
+        )
+    )
+}
+
+@Composable
 fun GaugeInput (value: String,  onValueChange: (String) -> Unit) {
     val focusManager = LocalFocusManager.current
 
@@ -297,12 +299,8 @@ fun GaugeInput (value: String,  onValueChange: (String) -> Unit) {
                             onValueChange(newValue)
                         }
         },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Number),
-        keyboardActions = KeyboardActions(
-            onDone =  {
-                focusManager.clearFocus()
-            }
-        ),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, keyboardType = KeyboardType.Number),
+
         modifier = Modifier
             .width(75.dp)
             .padding(10.dp)
@@ -310,8 +308,9 @@ fun GaugeInput (value: String,  onValueChange: (String) -> Unit) {
 }
 
 
+
 @Composable
-fun AddNeedleBtn (viewModel: AddKnitProjectViewModel, scrollScreenDown: () -> Unit) {
+fun AddBtnWithIcon (btnText: String, btnPressed: () -> Unit) {
     Row (
         modifier = Modifier
             .fillMaxSize()
@@ -320,16 +319,17 @@ fun AddNeedleBtn (viewModel: AddKnitProjectViewModel, scrollScreenDown: () -> Un
 
     ) {
         Box(modifier = Modifier.clickable {
-            scrollScreenDown()
-            viewModel.increaseNumberNeedleSizes()
+            btnPressed()
+
         }) {
             Row {
                 Icon(
                     imageVector = Icons.Default.AddCircle,
                     contentDescription = "Add",
-                    tint = Color(0xFFA3D9A5))
+                    tint = softerOrangeColor
+                )
                 Text(
-                    text = "Add needle",
+                    text = btnText,
                     modifier = Modifier.padding(start = 10.dp))
             }
         }
@@ -340,7 +340,12 @@ fun AddNeedleBtn (viewModel: AddKnitProjectViewModel, scrollScreenDown: () -> Un
 fun SaveBtn (viewModel: AddKnitProjectViewModel) {
 
     Row {
-        Button(onClick = { viewModel.trySave() })
+        Button(
+            onClick = { viewModel.saveImageToStorage() },
+            modifier = Modifier.width(200.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = softerOrangeColor
+            ))
         {
             Text(text = "Save")
         }
@@ -348,7 +353,7 @@ fun SaveBtn (viewModel: AddKnitProjectViewModel) {
 }
 
 @Composable
-fun TextInput (viewModel: AddKnitProjectViewModel, value: String, label: String, onValueChange: (String) -> Unit, onDone: () -> Unit) {
+fun TextInput (viewModel: AddKnitProjectViewModel, value: String, label: String, onValueChange: (String) -> Unit, onNext: () -> Unit) {
 
     val focusManager = LocalFocusManager.current
 
@@ -371,11 +376,14 @@ fun TextInput (viewModel: AddKnitProjectViewModel, value: String, label: String,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 5.dp),
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = keyboardType),
+            keyboardOptions = KeyboardOptions(
+                imeAction = if (label == "Project Notes" || label == "Needle size" || label == "Enter yarn you used") ImeAction.Done else ImeAction.Next,
+                keyboardType = keyboardType),
             keyboardActions = KeyboardActions(
-                onDone =  {
-                    focusManager.clearFocus()
-                    onDone()
+
+                onDone = {
+                    onNext()
+                        focusManager.clearFocus()
                 }
             ),
             colors = TextFieldDefaults.colors(
@@ -387,14 +395,15 @@ fun TextInput (viewModel: AddKnitProjectViewModel, value: String, label: String,
     }
 }
 @Composable
-fun AddImageBox(imagePressedAction: () -> Unit) {
+fun AddImageBox( imagePressedAction: () -> Unit) {
+
     Surface(
         modifier = Modifier
             .size(300.dp)
             .padding(8.dp)
             .clickable { imagePressedAction() },
         shape = RoundedCornerShape(8.dp),
-        shadowElevation = 4.dp
+        shadowElevation = 4.dp,
     ) {
         Image(
             painter = painterResource(id = R.drawable.outline_image_24),
@@ -437,3 +446,4 @@ fun Title () {
         )
     }
 }
+

@@ -1,3 +1,6 @@
 package com.example.knitexplore.data
 
-data class User()
+data class User (
+    val userId: String,
+    val name: String
+)

@@ -1,4 +1,21 @@
 package com.example.knitexplore.data
 
-class KnitProject {
-}
+import com.google.firebase.firestore.DocumentId
+import java.util.Date
+
+data class KnitProject (
+    @DocumentId val documentId : String? = null,
+    var ownerName: String,
+    var userUid: String,
+    var imageUrl: String,
+    var projectName: String,
+    var patternName: String,
+    var needleSizes: List<Double>,
+    var stitches: String,
+    var rows: String,
+    var yarns: List<String>,
+    var projectNotes: String,
+    var createdDate: Date = Date()
+)
+
+
