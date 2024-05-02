@@ -3,16 +3,11 @@ package com.example.knitexplore.ui.screens.addKnitProject
 
 import android.net.Uri
 import android.util.Log
-import android.view.MotionEvent
-import android.widget.ScrollView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,17 +27,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -50,13 +46,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalView
 
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -65,8 +57,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
@@ -76,8 +66,12 @@ import kotlinx.coroutines.launch
 fun AddKnitProject () {
 
 
-    val viewModel : AddKnitProjectViewController = viewModel()
+    val viewModel : AddKnitProjectViewModel = viewModel()
     val listState = rememberLazyListState()
+    val needleSizes: MutableList<Double?> = MutableList(viewModel.numberOfNeedleSizes) { 0.0 }
+    val myList: List<Int> = mutableListOf()
+    val variableList: MutableList<MutableState<Int>> = mutableListOf()
+
 
     val singlePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -89,7 +83,53 @@ fun AddKnitProject () {
         }
     )
 
+    fun addNewVariable() {
+        variableList.add(mutableIntStateOf(0))
+    }
+
     val coroutineScope = rememberCoroutineScope()
+
+
+    var garnList by remember { mutableStateOf(mutableListOf("hej")) }
+
+   /* Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        garnList.forEachIndexed { index, garn ->
+            var text = remember { mutableStateOf("")}
+            Log.d("!!!", "value: $garn")
+
+            OutlinedTextField(
+                value = text.value,
+                onValueChange = { newGarn ->
+                    Log.d("!!!", "newGarn: $newGarn")
+                    text.value = newGarn
+                },
+                label = { Text("Garn") },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Text
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { *//* Perform action when Done button on keyboard is clicked *//* }
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+        }
+
+        Button(
+            onClick = {
+                garnList.add("")
+            },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Lägg till garn")
+        }
+    }*/
 
 
 
@@ -124,22 +164,40 @@ fun AddKnitProject () {
                 }
             }
         }
-        /*item {
-            SubTitle("Name your project")
-        }*/
         item {
-            TextInput(viewModel = viewModel, "projectName", label = "Enter your project")
+
         }
-        /*item {
-            SubTitle("Enter pattern name")
-        }*/
         item {
-            TextInput(viewModel = viewModel, fieldName = "pattern", label = "Enter pattern name")
+            TextInput(
+                viewModel = viewModel,
+                value = viewModel.projectName,
+                label = "Enter your project",
+                onValueChange = { newText -> viewModel.projectName = newText},
+                onDone = {}
+            )
+        }
+
+        item {
+            TextInput(
+                viewModel = viewModel,
+                value = viewModel.patternName,
+                label = "Enter pattern name",
+                onValueChange = { newText -> viewModel.patternName = newText },
+                onDone = {}
+            )
         }
 
         item {
             repeat(viewModel.numberOfNeedleSizes) {
-                TextInput(viewModel = viewModel, fieldName = "needleSize", label = "Needle size" )
+                val text = remember { mutableDoubleStateOf(3.5) }
+                TextInput(viewModel = viewModel,
+                    value = text.doubleValue.toString(),
+                    label = "Needle size",
+                    onValueChange = {newValue ->
+                        if (newValue.matches(Regex("^\\d*\\.?\\d?\$"))) {
+                            text.doubleValue = newValue.toDouble()
+                        } },
+                    onDone = {viewModel.addNeedleSize(text.doubleValue.toString())})
             }
         }
 
@@ -151,6 +209,13 @@ fun AddKnitProject () {
           }
         }
         item {
+            GaugeTitle()
+        }
+        item {
+            GaugeInputs(viewModel = viewModel)
+        }
+
+        item {
             SaveBtn(viewModel = viewModel)
         }
         item {
@@ -159,9 +224,94 @@ fun AddKnitProject () {
     }
 }
 
+@Composable
+fun GarnTextField(
+    garn: String,
+    onGarnChanged: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = garn,
+        onValueChange = { newGarn ->
+            onGarnChanged(newGarn)
+        },
+        label = { Text("Garn") },
+        keyboardOptions = KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Done,
+            keyboardType = KeyboardType.Text
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = { /* Perform action when Done button on keyboard is clicked */ }
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    )
+}
+@Composable
+fun GaugeTitle () {
+    Row (modifier = Modifier
+        .fillMaxWidth()
+        .padding(start = 20.dp, top = 35.dp, bottom = 10.dp))
+    {
+        Text(
+            text = "Gauge 10x10 cm",
+            style = TextStyle(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+}
 
 @Composable
-fun AddNeedleBtn (viewModel: AddKnitProjectViewController,scrollScreenDown: () -> Unit) {
+fun GaugeInputs (viewModel: AddKnitProjectViewModel) {
+    Row (
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        GaugeInput(
+            value = viewModel.stitchesAmount,
+            onValueChange = {newText -> viewModel.stitchesAmount = newText})
+        Spacer(modifier = Modifier.width(5.dp))
+        Text(text = "Stitches in")
+        Spacer(modifier = Modifier.width(5.dp))
+        GaugeInput(
+            value = viewModel.rowsAmount,
+            onValueChange = {newText -> viewModel.rowsAmount = newText})
+        Spacer(modifier = Modifier.width(5.dp))
+        Text(text = "rows")
+    }
+
+}
+
+@Composable
+fun GaugeInput (value: String,  onValueChange: (String) -> Unit) {
+    val focusManager = LocalFocusManager.current
+
+    OutlinedTextField(
+        value = value,
+        onValueChange = { newValue ->
+                        if (newValue.length <= 2) {
+                            onValueChange(newValue)
+                        }
+        },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, keyboardType = KeyboardType.Number),
+        keyboardActions = KeyboardActions(
+            onDone =  {
+                focusManager.clearFocus()
+            }
+        ),
+        modifier = Modifier
+            .width(75.dp)
+            .padding(10.dp)
+        )
+}
+
+
+@Composable
+fun AddNeedleBtn (viewModel: AddKnitProjectViewModel, scrollScreenDown: () -> Unit) {
     Row (
         modifier = Modifier
             .fillMaxSize()
@@ -171,7 +321,7 @@ fun AddNeedleBtn (viewModel: AddKnitProjectViewController,scrollScreenDown: () -
     ) {
         Box(modifier = Modifier.clickable {
             scrollScreenDown()
-            viewModel.addNeedleSize()
+            viewModel.increaseNumberNeedleSizes()
         }) {
             Row {
                 Icon(
@@ -187,7 +337,7 @@ fun AddNeedleBtn (viewModel: AddKnitProjectViewController,scrollScreenDown: () -
 }
 
 @Composable
-fun SaveBtn (viewModel: AddKnitProjectViewController) {
+fun SaveBtn (viewModel: AddKnitProjectViewModel) {
 
     Row {
         Button(onClick = { viewModel.trySave() })
@@ -198,33 +348,22 @@ fun SaveBtn (viewModel: AddKnitProjectViewController) {
 }
 
 @Composable
-fun TextInput (viewModel: AddKnitProjectViewController, fieldName: String, label : String) {
+fun TextInput (viewModel: AddKnitProjectViewModel, value: String, label: String, onValueChange: (String) -> Unit, onDone: () -> Unit) {
 
     val focusManager = LocalFocusManager.current
-    var text by remember { mutableStateOf("") }
+
     var keyboardType: KeyboardType = KeyboardType.Text
 
+    if (label == "Needle size") {
+        keyboardType = KeyboardType.Number
+    }
 
-   when (fieldName) {
-        "projectName" -> text = viewModel.projectName
-        "pattern" -> text = viewModel.patternName
-        "needleSize" -> {
-           text = viewModel.needleSize?.toString() ?: ""
-           keyboardType = KeyboardType.Number
-       }
-
-   }
 
     Row {
         TextField(
-            value = text,
+            value = value,
             onValueChange = { newText ->
-
-                when (fieldName) {
-                    "projectName" -> viewModel.updateProjectText(newText)
-                    "pattern" -> viewModel.updatePatternName(newText)
-                    "needleSize" -> viewModel.updateNeedleSize(newText.toDouble())
-                }
+                            onValueChange(newText)
             },
             label = {
                     Text(label)
@@ -236,6 +375,7 @@ fun TextInput (viewModel: AddKnitProjectViewController, fieldName: String, label
             keyboardActions = KeyboardActions(
                 onDone =  {
                     focusManager.clearFocus()
+                    onDone()
                 }
             ),
             colors = TextFieldDefaults.colors(
@@ -254,7 +394,7 @@ fun AddImageBox(imagePressedAction: () -> Unit) {
             .padding(8.dp)
             .clickable { imagePressedAction() },
         shape = RoundedCornerShape(8.dp),
-        shadowElevation = 4.dp // Skugga
+        shadowElevation = 4.dp
     ) {
         Image(
             painter = painterResource(id = R.drawable.outline_image_24),

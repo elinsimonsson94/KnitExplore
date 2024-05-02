@@ -2,11 +2,11 @@ package com.example.knitexplore.ui.screens.addKnitProject
 
 import android.net.Uri
 import android.util.Log
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
@@ -15,16 +15,36 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class AddKnitProjectViewController : ViewModel() {
+class AddKnitProjectViewModel : ViewModel() {
     var imageUriState by  mutableStateOf<Uri?>(null)
     var projectName by mutableStateOf("")
     var patternName by mutableStateOf("")
-    var needleSize by mutableStateOf<Double?>(null)
+
     var numberOfNeedleSizes by mutableIntStateOf(1)
+    var numberOfYarns by mutableIntStateOf(1)
+    var stitchesAmount by mutableStateOf("")
+    var rowsAmount by mutableStateOf("")
+    private val needleSizes = mutableStateListOf<Double>()
+    private val yarns = mutableStateListOf<String>()
 
     private var storageRef = Firebase.storage.reference
 
-    fun addNeedleSize() {
+
+    fun addNeedleSize(size: String) {
+        val sizeAsDouble = size.toDoubleOrNull()
+        if (sizeAsDouble != null) {
+            Log.d("!!!", "size: $sizeAsDouble")
+            needleSizes.add(sizeAsDouble)
+        } else {
+            Log.d("!!!", "Invalid size: $size")
+        }
+    }
+
+    fun addYarn (yarn: String) {
+        yarns.add(yarn)
+    }
+
+    fun increaseNumberNeedleSizes() {
         numberOfNeedleSizes++
     }
 
@@ -33,12 +53,12 @@ class AddKnitProjectViewController : ViewModel() {
     }
 
     fun trySave () {
-        Log.d("!!!", "projectName: $projectName patternName: $patternName  needleSize: $needleSize")
+        for (i in needleSizes) {
+            Log.d("!!!", "needleSizes $i")
+        }
+        Log.d("!!!", "projectName: $projectName patternName: $patternName  needleSize: ${needleSizes.joinToString ()}, stitches: $stitchesAmount")
     }
 
-    fun updateNeedleSize (number: Double) {
-        needleSize = number
-    }
     fun updateProjectText (text: String) {
         projectName = text
     }
