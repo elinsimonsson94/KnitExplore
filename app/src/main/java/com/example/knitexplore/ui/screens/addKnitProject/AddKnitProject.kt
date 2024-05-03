@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -176,7 +177,7 @@ fun AddKnitProject (navController: NavHostController) {
             item {
                 repeat(viewModel.numberOfNeedleSizes) {
 
-                    val text = remember { mutableDoubleStateOf(0.0) }
+                    val text = rememberSaveable  { mutableDoubleStateOf(0.0) }
                     TextInput(viewModel = viewModel,
                         value = text.doubleValue.toString(),
                         label = "Needle size",
@@ -211,7 +212,7 @@ fun AddKnitProject (navController: NavHostController) {
 
             item {
                 repeat(viewModel.numberOfYarns) {
-                    val text = remember { mutableStateOf("") }
+                    val text = rememberSaveable { mutableStateOf("") }
                     TextInput(
                         viewModel = viewModel,
                         value = text.value,
