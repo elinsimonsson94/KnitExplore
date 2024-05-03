@@ -25,15 +25,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -54,14 +59,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
 import com.example.knitexplore.ui.theme.softerOrangeColor
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddKnitProject () {
+fun AddKnitProject (navController: NavHostController) {
 
     val auth = Firebase.auth
     val currentUser = auth.currentUser
@@ -100,126 +107,143 @@ fun AddKnitProject () {
         logInAnonymously()
     }
 
-    LazyColumn(
-        state = listState,
-        modifier= Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        contentPadding = PaddingValues(horizontal = 16.dp)
-    ) {
-        item {
-            Title()
-        }
-        item {
-            Row (modifier = Modifier.padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically
-
-            ) {
-                if (viewModel.imageUriState == null) {
-                    AddImageBox {
-                        singlePhotoPicker.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
+    Scaffold (
+        topBar = {
+            TopAppBar(
+                title = { Text("") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
+                })
+        }
+    ) { innerPadding ->
 
-                } else {
-                    SelectedImage(uri = viewModel.imageUriState!!) {
-                        singlePhotoPicker.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(horizontal = 16.dp)
+        ) {
+            item {
+                Title()
+            }
+            item {
+                Row(
+                    modifier = Modifier.padding(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+
+                ) {
+                    if (viewModel.imageUriState == null) {
+                        AddImageBox {
+                            singlePhotoPicker.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+
+                    } else {
+                        SelectedImage(uri = viewModel.imageUriState!!) {
+                            singlePhotoPicker.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        item {
-            TextInput(
-                viewModel = viewModel,
-                value = viewModel.projectName,
-                label = "Enter your project",
-                onValueChange = { newText -> viewModel.projectName = newText},
-                onNext = {}
-            )
-        }
-
-        item {
-            TextInput(
-                viewModel = viewModel,
-                value = viewModel.patternName,
-                label = "Enter pattern name",
-                onValueChange = { newText -> viewModel.patternName = newText },
-                onNext = {}
-            )
-        }
-
-        item {
-            repeat(viewModel.numberOfNeedleSizes) {
-
-                val text = remember { mutableDoubleStateOf(0.0) }
-                TextInput(viewModel = viewModel,
-                    value = text.doubleValue.toString(),
-                    label = "Needle size",
-                    onValueChange = { newValue ->
-                       // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
-                        if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
-                            // TODO Review regex, doesn't work to change the number after the decimal
-                            text.doubleValue = newValue.toDouble()
-                        } },
-
-                    onNext = {viewModel.addNeedleSize(text.doubleValue.toString())})
-            }
-        }
-
-        item {
-
-            // TODO Check if the user has saved the previous needle sizes, otherwise the button should not be enabled
-            AddBtnWithIcon(btnText = "Add needle") {
-              viewModel.increaseNumberNeedleSizes()
-              /*coroutineScope.launch {
-                  listState.scrollToItem(index = viewModel.numberOfNeedleSizes, scrollOffset = 50)
-              }*/
-          }
-        }
-        item {
-            GaugeTitle()
-        }
-        item {
-            GaugeInputs(viewModel = viewModel)
-        }
-
-        item {
-            repeat(viewModel.numberOfYarns) {
-                val text = remember { mutableStateOf("") }
+            item {
                 TextInput(
                     viewModel = viewModel,
-                    value = text.value,
-                    label = "Enter yarn you used",
-                    onValueChange = {newText -> text.value = newText},
-                    onNext = {
-                        viewModel.addYarn(text.value)
-                    Log.d("!!!", "Nästa rad körs, yarn")})
+                    value = viewModel.projectName,
+                    label = "Enter your project",
+                    onValueChange = { newText -> viewModel.projectName = newText },
+                    onNext = {}
+                )
             }
-        }
-        item {
-            // TODO Check if the user has saved the previous yarn, otherwise the button should not be enabled
 
-            AddBtnWithIcon(btnText = "Add yarn") {
-                viewModel.increaseNumberYarns()
+            item {
+                TextInput(
+                    viewModel = viewModel,
+                    value = viewModel.patternName,
+                    label = "Enter pattern name",
+                    onValueChange = { newText -> viewModel.patternName = newText },
+                    onNext = {}
+                )
             }
-        }
 
-        item {
-            ProjectNotesInput(notes = viewModel.projectNotes,
-                onNotesChange = {
-                    viewModel.projectNotes = it
-                })
-        }
+            item {
+                repeat(viewModel.numberOfNeedleSizes) {
 
-        item {
-            SaveBtn(viewModel = viewModel)
-        }
-        item {
-            Spacer(modifier = Modifier.height(50.dp))
+                    val text = remember { mutableDoubleStateOf(0.0) }
+                    TextInput(viewModel = viewModel,
+                        value = text.doubleValue.toString(),
+                        label = "Needle size",
+                        onValueChange = { newValue ->
+                            // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
+                            if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
+                                // TODO Review regex, doesn't work to change the number after the decimal
+                                text.doubleValue = newValue.toDouble()
+                            }
+                        },
+
+                        onNext = { viewModel.addNeedleSize(text.doubleValue.toString()) })
+                }
+            }
+
+            item {
+
+                // TODO Check if the user has saved the previous needle sizes, otherwise the button should not be enabled
+                AddBtnWithIcon(btnText = "Add needle") {
+                    viewModel.increaseNumberNeedleSizes()
+                    /*coroutineScope.launch {
+                  listState.scrollToItem(index = viewModel.numberOfNeedleSizes, scrollOffset = 50)
+              }*/
+                }
+            }
+            item {
+                GaugeTitle()
+            }
+            item {
+                GaugeInputs(viewModel = viewModel)
+            }
+
+            item {
+                repeat(viewModel.numberOfYarns) {
+                    val text = remember { mutableStateOf("") }
+                    TextInput(
+                        viewModel = viewModel,
+                        value = text.value,
+                        label = "Enter yarn you used",
+                        onValueChange = { newText -> text.value = newText },
+                        onNext = {
+                            viewModel.addYarn(text.value)
+                            Log.d("!!!", "Nästa rad körs, yarn")
+                        })
+                }
+            }
+            item {
+                // TODO Check if the user has saved the previous yarn, otherwise the button should not be enabled
+
+                AddBtnWithIcon(btnText = "Add yarn") {
+                    viewModel.increaseNumberYarns()
+                }
+            }
+
+            item {
+                ProjectNotesInput(notes = viewModel.projectNotes,
+                    onNotesChange = {
+                        viewModel.projectNotes = it
+                    })
+            }
+
+            item {
+                SaveBtn(viewModel = viewModel)
+            }
+            item {
+                Spacer(modifier = Modifier.height(50.dp))
+            }
         }
     }
 }
@@ -436,7 +460,7 @@ fun Title () {
 
     Row (
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(top = 50.dp, bottom = 40.dp))
+        modifier = Modifier.padding(top = 10.dp, bottom = 40.dp))
     {
         Text(text = "Add new project",
             style = TextStyle(
