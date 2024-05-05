@@ -22,13 +22,18 @@ class AddKnitProjectViewModel : ViewModel() {
     var imageUriState by  mutableStateOf<Uri?>(null)
     var projectName by mutableStateOf("")
     var patternName by mutableStateOf("")
-
-    var numberOfNeedleSizes by mutableIntStateOf(1)
+    var needle1 by mutableStateOf(0.0)
+    var needle2 by mutableStateOf(0.0)
+    var needle3 by mutableStateOf(0.0)
+    var needle4 by mutableStateOf(0.0)
+    var needle5 by mutableStateOf(0.0)
+    private var currentNeedle by mutableStateOf(0) //array always starts on 0
+    var needleVisibilityList by mutableStateOf(listOf(true, false, false, false, false))
     var numberOfYarns by mutableIntStateOf(1)
     var stitchesAmount by mutableIntStateOf(0)
     var rowsAmount by mutableIntStateOf(0)
     var projectNotes by mutableStateOf("")
-    val needleSizes = mutableStateListOf<Double>()
+
     private val yarns = mutableStateListOf<String>()
 
     private var storageRef = Firebase.storage.reference
@@ -37,14 +42,48 @@ class AddKnitProjectViewModel : ViewModel() {
 
 
 
-    fun addNeedleSize(size: String) {
-        val sizeAsDouble = size.toDoubleOrNull()
-        if (sizeAsDouble != null) {
-            Log.d("!!!", "size: $sizeAsDouble")
-            needleSizes.add(sizeAsDouble)
-        } else {
-            Log.d("!!!", "Invalid size: $size")
+    fun activateNextNeedle() {
+        currentNeedle++
+        if (currentNeedle < needleVisibilityList.size) {
+            needleVisibilityList = needleVisibilityList.toMutableList().also {
+                it[currentNeedle] = true
+            }
         }
+    }
+
+    fun deActivateNextNeedle() {
+        if (currentNeedle <= needleVisibilityList.size) {
+            needleVisibilityList = needleVisibilityList.toMutableList().also {
+                it[currentNeedle] = false
+            }
+        }
+
+        when (currentNeedle) {
+            1 -> needle2 = 0.0
+            2 -> needle3 = 0.0
+            3 -> needle4 = 0.0
+            4 -> needle5 = 0.0
+        }
+
+        currentNeedle--
+    }
+
+    private fun createNeedleList () : List<Double> {
+        val needleValuesList = mutableStateListOf<Double>()
+
+        listOf(needle1,needle2, needle3, needle4, needle5).forEach { newValue ->
+            if (newValue != 0.0) {
+                needleValuesList.add(newValue)
+            }
+        }
+
+        /*needle1 = 0.0
+        needle2 = 0.0
+        needle3 = 0.0
+        needle4 = 0.0
+        needle5 = 0.0*/
+
+        return needleValuesList
     }
 
     fun addYarn (yarn: String) {
@@ -55,40 +94,25 @@ class AddKnitProjectViewModel : ViewModel() {
         numberOfYarns++
     }
 
-    fun increaseNumberNeedleSizes() {
-        numberOfNeedleSizes++
-    }
+
 
     fun setImageUri (uri : Uri) {
         imageUriState = uri
     }
 
-    private fun convertToDate (timePicked: String): Date? {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm")
-        return try {
-            val today = Date()
-            val formattedDateStr = SimpleDateFormat("yyyy-MM-dd").format(today).toString()
-            val dateTimeStr = "$formattedDateStr $timePicked"
-            dateFormat.parse(dateTimeStr)
-
-        } catch (e: Exception) {
-            e.message?.let { Log.d("!!!", it) }
-            null
-        }
-    }
-
     private fun saveKnitProjectToFirebase (imageUrl: String) {
         val currentUser = auth.currentUser
+        val needleSizeList = createNeedleList()
+
 
         currentUser?.let {
-
             val newKnitProject = KnitProject(
                 ownerName = "Elin",
                 userUid = currentUser.uid,
                 imageUrl = imageUrl,
                 projectName = projectName,
                 patternName = patternName,
-                needleSizes = needleSizes,
+                needleSizes = needleSizeList,
                 stitches = stitchesAmount,
                 rows = rowsAmount,
                 yarns = yarns,
