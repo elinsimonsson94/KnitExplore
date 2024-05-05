@@ -1,7 +1,6 @@
 package com.example.knitexplore.ui.screens.homeScreen
 
 import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,8 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -26,20 +23,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,19 +46,14 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.data.KnitProject
 import com.example.knitexplore.data.NavigationItem
-import com.example.knitexplore.ui.composables.KnitProjectDetailsModal
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavHostController) {
 
-    val viewModel: HomeScreenViewModel = viewModel()
+    val viewModel: HomeViewModel = viewModel()
     val knitProjects by viewModel.knitProjects.observeAsState(initial = emptyList())
     viewModel.fetchKnitProjects()
-    val sheetState = rememberModalBottomSheetState()
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var selectedKnitProjectIndex by remember { mutableStateOf(-1) }
 
 
     Scaffold(
@@ -101,39 +88,12 @@ fun HomeScreen(navController: NavHostController) {
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 horizontalArrangement = Arrangement.spacedBy(30.dp)
             ) {
-                itemsIndexed(knitProjects) { index, knitProject ->
+                itemsIndexed(knitProjects) { _, knitProject ->
                     KnitProjectGridCell(knitProject = knitProject) {
+                        viewModel.setSelectedKnitProject(knitProject)
 
                         navController.navigate(NavigationItem.KnitProjectDetails.route)
-                        selectedKnitProjectIndex = index
                     }
-                    /*if (selectedKnitProjectIndex == index) {
-
-                        ModalBottomSheet(
-                            onDismissRequest = {
-                                selectedKnitProjectIndex = -1
-                           //     showBottomSheet = false
-                            },
-                            sheetState = sheetState,
-                        ) {
-                            val coroutineScope = rememberCoroutineScope()
-
-                            LaunchedEffect(Unit) {
-                                if (sheetState.isVisible && !sheetState.hasExpandedState) {
-                                    coroutineScope.launch {
-
-                                    }
-                                }
-                            }
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                KnitProjectDetailsModal(knitProject = knitProject)
-                            }
-                        }
-                    }*/
                 }
             }
 

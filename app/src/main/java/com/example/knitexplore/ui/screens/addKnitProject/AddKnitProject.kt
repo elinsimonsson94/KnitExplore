@@ -373,7 +373,8 @@ fun SaveBtn (viewModel: AddKnitProjectViewModel) {
             modifier = Modifier.width(200.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = softerOrangeColor
-            ))
+            )
+        )
         {
             Text(text = "Save")
         }
