@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.screens.addKnitProject.AddKnitProject
 import com.example.knitexplore.ui.screens.homeScreen.HomeScreen
+import com.example.knitexplore.ui.screens.knitProjectDetails.KnitProjectDetailsScreen
 
 @Composable
 fun AppNavHost (
@@ -27,6 +28,8 @@ fun AppNavHost (
         composable(NavigationItem.AddKnitProject.route) {
             AddKnitProject(navController)
         }
-
+        composable(NavigationItem.KnitProjectDetails.route) {
+            KnitProjectDetailsScreen(navController)
+        }
     }
 }

@@ -25,8 +25,8 @@ class AddKnitProjectViewModel : ViewModel() {
 
     var numberOfNeedleSizes by mutableIntStateOf(1)
     var numberOfYarns by mutableIntStateOf(1)
-    var stitchesAmount by mutableStateOf("")
-    var rowsAmount by mutableStateOf("")
+    var stitchesAmount by mutableIntStateOf(0)
+    var rowsAmount by mutableIntStateOf(0)
     var projectNotes by mutableStateOf("")
     val needleSizes = mutableStateListOf<Double>()
     private val yarns = mutableStateListOf<String>()
@@ -34,6 +34,7 @@ class AddKnitProjectViewModel : ViewModel() {
     private var storageRef = Firebase.storage.reference
     private var db = Firebase.firestore
     private var auth = Firebase.auth
+
 
 
     fun addNeedleSize(size: String) {

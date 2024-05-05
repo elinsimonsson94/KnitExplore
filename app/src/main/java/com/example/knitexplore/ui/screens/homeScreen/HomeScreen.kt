@@ -1,7 +1,7 @@
 package com.example.knitexplore.ui.screens.homeScreen
 
 import android.util.Log
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,11 +23,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -52,7 +51,7 @@ import com.example.knitexplore.data.NavigationItem
 @Composable
 fun HomeScreen(navController: NavHostController) {
 
-    val viewModel: HomeScreenViewModel = viewModel()
+    val viewModel: HomeViewModel = viewModel()
     val knitProjects by viewModel.knitProjects.observeAsState(initial = emptyList())
     viewModel.fetchKnitProjects()
 
@@ -77,7 +76,7 @@ fun HomeScreen(navController: NavHostController) {
     ) { innerPadding ->
 
         if (knitProjects.isEmpty()) {
-            Text(text = "Tom lista")
+            Text(text = "Det verkar vara tomt här")
         } else {
             val gridState = rememberLazyGridState()
 
@@ -90,19 +89,28 @@ fun HomeScreen(navController: NavHostController) {
                 horizontalArrangement = Arrangement.spacedBy(30.dp)
             ) {
                 itemsIndexed(knitProjects) { _, knitProject ->
-                    KnitProjectGridCell(knitProject = knitProject)
+                    KnitProjectGridCell(knitProject = knitProject) {
+                        viewModel.setSelectedKnitProject(knitProject)
+
+                        navController.navigate(NavigationItem.KnitProjectDetails.route)
+                    }
                 }
             }
+
         }
     }
 
 }
 
 @Composable
-fun KnitProjectGridCell(knitProject: KnitProject) {
+fun KnitProjectGridCell(knitProject: KnitProject, knitProjectPressed: () -> Unit) {
 
     Column(
-        modifier = Modifier.padding(vertical = 10.dp)
+        modifier = Modifier
+            .padding(vertical = 10.dp)
+            .clickable {
+                knitProjectPressed()
+            },
     ) {
         KnitProjectImage(imageUrl = knitProject.imageUrl)
         KnitProjectPatternName(patterName = knitProject.patternName)
@@ -134,7 +142,6 @@ fun KnitProjectImage(imageUrl: String) {
     var imageIsLoading by remember { mutableStateOf(false) }
     var imageLoadFailed by remember { mutableStateOf(false) }
 
-
     Box(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -161,6 +168,4 @@ fun KnitProjectImage(imageUrl: String) {
             Log.d("!!!", "fail to loading images")
         }
     }
-
-
 }

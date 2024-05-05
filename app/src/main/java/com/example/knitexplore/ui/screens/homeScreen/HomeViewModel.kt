@@ -5,14 +5,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.knitexplore.data.KnitProject
+import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 
-class HomeScreenViewModel : ViewModel() {
+class HomeViewModel : ViewModel() {
 
-
+    private val knitProjectViewModel =KnitProjectViewModel
     private val db = Firebase.firestore
     private val auth = Firebase.auth
     private val _knitProjects = MutableLiveData<List<KnitProject>>()
@@ -32,7 +33,6 @@ class HomeScreenViewModel : ViewModel() {
                     for (document in snapshot.documents) {
                         try {
                             val knitProject = document.toObject<KnitProject>()
-                            Log.d("!!!", "knitProject: $knitProject")
                             if (knitProject != null) {
                                 knitProjects.add(knitProject)
                             }
@@ -44,5 +44,9 @@ class HomeScreenViewModel : ViewModel() {
                 }
 
             }
+    }
+
+    fun setSelectedKnitProject (selectedKnitProject: KnitProject) {
+        knitProjectViewModel.setSelectedKnitProject(selectedKnitProject)
     }
 }

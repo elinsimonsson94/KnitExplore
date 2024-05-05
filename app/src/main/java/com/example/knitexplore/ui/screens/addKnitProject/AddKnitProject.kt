@@ -44,6 +44,7 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -176,7 +177,7 @@ fun AddKnitProject (navController: NavHostController) {
             item {
                 repeat(viewModel.numberOfNeedleSizes) {
 
-                    val text = remember { mutableDoubleStateOf(0.0) }
+                    val text = rememberSaveable  { mutableDoubleStateOf(0.0) }
                     TextInput(viewModel = viewModel,
                         value = text.doubleValue.toString(),
                         label = "Needle size",
@@ -211,7 +212,7 @@ fun AddKnitProject (navController: NavHostController) {
 
             item {
                 repeat(viewModel.numberOfYarns) {
-                    val text = remember { mutableStateOf("") }
+                    val text = rememberSaveable { mutableStateOf("") }
                     TextInput(
                         viewModel = viewModel,
                         value = text.value,
@@ -275,16 +276,19 @@ fun GaugeInputs (viewModel: AddKnitProjectViewModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         GaugeInput(
-            value = viewModel.stitchesAmount,
-            onValueChange = {newText -> viewModel.stitchesAmount = newText}
+            value = if (viewModel.stitchesAmount == 0) "" else viewModel.stitchesAmount.toString(),
+            onValueChange = { newText ->
+                viewModel.stitchesAmount = if (newText.isEmpty()) 0 else newText.toInt()
+            }
         )
 
         Spacer(modifier = Modifier.width(5.dp))
         Text(text = "Stitches in")
         Spacer(modifier = Modifier.width(5.dp))
         GaugeInput(
-            value = viewModel.rowsAmount,
-            onValueChange = {newText -> viewModel.rowsAmount = newText})
+            value = viewModel.rowsAmount.toString(),
+            onValueChange = {newText -> viewModel.rowsAmount = newText.toInt()}
+        )
         Spacer(modifier = Modifier.width(5.dp))
         Text(text = "rows")
     }
@@ -369,7 +373,8 @@ fun SaveBtn (viewModel: AddKnitProjectViewModel) {
             modifier = Modifier.width(200.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = softerOrangeColor
-            ))
+            )
+        )
         {
             Text(text = "Save")
         }
