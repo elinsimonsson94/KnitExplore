@@ -276,16 +276,19 @@ fun GaugeInputs (viewModel: AddKnitProjectViewModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         GaugeInput(
-            value = viewModel.stitchesAmount,
-            onValueChange = {newText -> viewModel.stitchesAmount = newText}
+            value = if (viewModel.stitchesAmount == 0) "" else viewModel.stitchesAmount.toString(),
+            onValueChange = { newText ->
+                viewModel.stitchesAmount = if (newText.isEmpty()) 0 else newText.toInt()
+            }
         )
 
         Spacer(modifier = Modifier.width(5.dp))
         Text(text = "Stitches in")
         Spacer(modifier = Modifier.width(5.dp))
         GaugeInput(
-            value = viewModel.rowsAmount,
-            onValueChange = {newText -> viewModel.rowsAmount = newText})
+            value = viewModel.rowsAmount.toString(),
+            onValueChange = {newText -> viewModel.rowsAmount = newText.toInt()}
+        )
         Spacer(modifier = Modifier.width(5.dp))
         Text(text = "rows")
     }

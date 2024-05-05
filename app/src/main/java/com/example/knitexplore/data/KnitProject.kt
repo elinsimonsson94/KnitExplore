@@ -12,8 +12,8 @@ data class KnitProject (
     var projectName: String = "",
     var patternName: String = "",
     var needleSizes: List<Double> = emptyList(),
-    var stitches: String = "",
-    var rows: String = "",
+    var stitches: Int = 0,
+    var rows: Int = 0,
     var yarns: List<String> = emptyList(),
     var projectNotes: String = "",
     var createdDate: Date = Date()
