@@ -69,11 +69,11 @@ import com.google.protobuf.FieldType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddKnitProject(navController: NavHostController) {
+fun AddKnitProject(navController: NavHostController, isEditing: Boolean) {
 
     val auth = Firebase.auth
     val currentUser = auth.currentUser
-    Log.d("!!!", "currentUser ${currentUser?.uid}")
+    Log.d("!!!", "isEditing: $isEditing")
 
 
     val viewModel: AddKnitProjectViewModel = viewModel()

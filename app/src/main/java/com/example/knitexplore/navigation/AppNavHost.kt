@@ -25,8 +25,9 @@ fun AppNavHost (
         composable(NavigationItem.Home.route) {
             HomeScreen(navController)
         }
-        composable(NavigationItem.AddKnitProject.route) {
-            AddKnitProject(navController)
+        composable(route = NavigationItem.AddKnitProject.route) {
+            val isEditing = it.arguments?.getString("isEditing")?.toBoolean() ?: false
+            AddKnitProject(navController = navController, isEditing = isEditing )
         }
         composable(NavigationItem.KnitProjectDetails.route) {
             KnitProjectDetailsScreen(navController)
