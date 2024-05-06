@@ -41,49 +41,42 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
+import com.example.knitexplore.data.NeedleYarnType
 import com.example.knitexplore.ui.theme.softerOrangeColor
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.protobuf.FieldType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddKnitProject (navController: NavHostController) {
+fun AddKnitProject(navController: NavHostController) {
 
     val auth = Firebase.auth
     val currentUser = auth.currentUser
     Log.d("!!!", "currentUser ${currentUser?.uid}")
 
 
-
-    val viewModel : AddKnitProjectViewModel = viewModel()
+    val viewModel: AddKnitProjectViewModel = viewModel()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
@@ -97,9 +90,9 @@ fun AddKnitProject (navController: NavHostController) {
         }
     )
 
-    fun logInAnonymously () {
+    fun logInAnonymously() {
         auth.signInAnonymously()
-            .addOnCompleteListener {task ->
+            .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d("!!!", "signInAnonymously:success")
                     val user = auth.currentUser
@@ -114,7 +107,7 @@ fun AddKnitProject (navController: NavHostController) {
         logInAnonymously()
     }
 
-    Scaffold (
+    Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("") },
@@ -164,8 +157,7 @@ fun AddKnitProject (navController: NavHostController) {
                 TextInput(
                     value = viewModel.projectName,
                     label = "Enter your project",
-                    onValueChange = { newText -> viewModel.projectName = newText },
-                    onNext = {}
+                    onValueChange = { newText -> viewModel.projectName = newText }
                 )
             }
 
@@ -173,43 +165,17 @@ fun AddKnitProject (navController: NavHostController) {
                 TextInput(
                     value = viewModel.patternName,
                     label = "Enter pattern name",
-                    onValueChange = { newText -> viewModel.patternName = newText },
-                    onNext = {}
+                    onValueChange = { newText -> viewModel.patternName = newText }
                 )
             }
 
             item {
                 NeedleSizesInputs(viewModel = viewModel)
-                /*repeat(viewModel.numberOfNeedleSizes) {
-
-                    val text = rememberSaveable  { mutableDoubleStateOf(0.0) }
-                    TextInput(
-                        value = text.doubleValue.toString(),
-                        label = "Needle size",
-                        onValueChange = { newValue ->
-                            // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
-                            if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
-                                // TODO Review regex, doesn't work to change the number after the decimal
-                                text.doubleValue = newValue.toDouble()
-                            }
-                        },
-
-                        onNext = {
-                            //viewModel.addNeedleSize(text.doubleValue.toString())
-                            Log.d("!!!", "onNext körs")
-                        })
-                }*/
             }
 
             item {
-
-                // TODO Check if the user has saved the previous needle sizes, otherwise the button should not be enabled
                 AddBtnWithIcon(btnText = "Add needle") {
                     viewModel.activateNextNeedle()
-                    //viewModel.increaseNumberNeedleSizes()
-                    /*coroutineScope.launch {
-                  listState.scrollToItem(index = viewModel.numberOfNeedleSizes, scrollOffset = 50)
-              }*/
                 }
             }
             item {
@@ -220,33 +186,19 @@ fun AddKnitProject (navController: NavHostController) {
             }
 
             item {
-                repeat(viewModel.numberOfYarns) {
-                    val text = rememberSaveable { mutableStateOf("") }
-                    TextInput(
-                        value = text.value,
-                        label = "Enter yarn you used",
-                        onValueChange = { newText -> text.value = newText },
-                        onNext = {
-                            viewModel.addYarn(text.value)
-                            Log.d("!!!", "Nästa rad körs, yarn")
-                        })
-                }
+                YarnInputs(viewModel = viewModel)
             }
             item {
-                // TODO Check if the user has saved the previous yarn, otherwise the button should not be enabled
-
                 AddBtnWithIcon(btnText = "Add yarn") {
-                    viewModel.increaseNumberYarns()
+                    viewModel.activateNextYarn()
                 }
             }
-
             item {
                 ProjectNotesInput(notes = viewModel.projectNotes,
                     onNotesChange = {
                         viewModel.projectNotes = it
                     })
             }
-
             item {
                 SaveBtn(viewModel = viewModel)
             }
@@ -257,83 +209,17 @@ fun AddKnitProject (navController: NavHostController) {
     }
 }
 
-/*@Composable
-fun NeedleSizesInputs (viewModel: AddKnitProjectViewModel) {
-    NeedleField(
-        firstNeedleField = true,
-        value = viewModel.needle1.toString(),
-        onValueChange = { newValue ->
-            // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
-            if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
-                // TODO Review regex, doesn't work to change the number after the decimal
-                viewModel.needle1 = newValue.toDouble()
-            }
-        },
-    )
-    if (viewModel.needleVisibilityList[1]) {
-        NeedleField(
-            firstNeedleField = false,
-            value = viewModel.needle2.toString(),
-            onValueChange = { newValue ->
-                // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
-                if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
-                    // TODO Review regex, doesn't work to change the number after the decimal
-                    viewModel.needle2 = newValue.toDouble()
-                }
-            },
-        )
-    }
-    if (viewModel.needleVisibilityList[2]) {
-        NeedleField(
-            firstNeedleField = false,
-            value = viewModel.needle3.toString(),
-            onValueChange = { newValue ->
-                // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
-                if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
-                    // TODO Review regex, doesn't work to change the number after the decimal
-                    viewModel.needle3 = newValue.toDouble()
-                }
-            },
-        )
-    }
-    if (viewModel.needleVisibilityList[3]) {
-        NeedleField(
-            firstNeedleField = false,
-            value = viewModel.needle4.toString(),
-            onValueChange = { newValue ->
-                // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
-                if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
-                    // TODO Review regex, doesn't work to change the number after the decimal
-                    viewModel.needle4 = newValue.toDouble()
-                }
-            },
-        )
-    }
-    if (viewModel.needleVisibilityList[4]) {
-        NeedleField(
-            firstNeedleField = false,
-            value = viewModel.needle5.toString(),
-            onValueChange = { newValue ->
-                // if (newValue.matches(Regex("^\\d{0,2}(\\.\\d)?\$"))) {
-                if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
-                    // TODO Review regex, doesn't work to change the number after the decimal
-                    viewModel.needle5 = newValue.toDouble()
-                }
-            },
-        )
-    }
-}*/
-
 @Composable
 fun NeedleSizesInputs(viewModel: AddKnitProjectViewModel) {
     if (viewModel.needleVisibilityList[0]) {
-        NeedleField(
+        TextFieldWithClearIcon(
             viewModel = viewModel,
-            firstNeedleField = true,
-            value = viewModel.needle1.toString(),
+            isFirstField = true,
+            value = viewModel.needle1,
+            needleYarnType = NeedleYarnType.NEEDLE_SIZE,
             onValueChange = { newValue ->
                 if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
-                    viewModel.needle1 = newValue.toDouble()
+                    viewModel.needle1 = newValue
                 }
             },
         )
@@ -347,17 +233,18 @@ fun NeedleSizesInputs(viewModel: AddKnitProjectViewModel) {
                 4 -> viewModel.needle5
                 else -> 0.0
             }
-            NeedleField(
+            TextFieldWithClearIcon(
                 viewModel = viewModel,
-                firstNeedleField = false,
+                isFirstField = false,
                 value = needleValue.toString(),
+                needleYarnType = NeedleYarnType.NEEDLE_SIZE,
                 onValueChange = { newValue ->
                     if (newValue.matches(Regex("^\\d{0,2}(\\.\\d{0,1})?\\d?\$"))) {
                         when (index) {
-                            1 -> viewModel.needle2 = newValue.toDouble()
-                            2 -> viewModel.needle3 = newValue.toDouble()
-                            3 -> viewModel.needle4 = newValue.toDouble()
-                            4 -> viewModel.needle5 = newValue.toDouble()
+                            1 -> viewModel.needle2 = newValue
+                            2 -> viewModel.needle3 = newValue
+                            3 -> viewModel.needle4 = newValue
+                            4 -> viewModel.needle5 = newValue
                         }
                     }
                 },
@@ -366,16 +253,54 @@ fun NeedleSizesInputs(viewModel: AddKnitProjectViewModel) {
     }
 }
 
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NeedleField (
+fun YarnInputs(viewModel: AddKnitProjectViewModel) {
+    if (viewModel.yarnVisibilityList[0]) {
+        TextFieldWithClearIcon(
+            needleYarnType = NeedleYarnType.YARN,
+            viewModel = viewModel,
+            isFirstField = true,
+            value = viewModel.yarn1.toString(),
+            onValueChange = { newValue ->
+                viewModel.yarn1 = newValue
+            },
+        )
+    }
+    for (index in 1 until viewModel.yarnVisibilityList.size) {
+        if (viewModel.yarnVisibilityList[index]) {
+            val yarnValue = when (index) {
+                1 -> viewModel.yarn2
+                2 -> viewModel.yarn3
+                3 -> viewModel.yarn4
+                4 -> viewModel.yarn5
+                else -> ""
+            }
+            TextFieldWithClearIcon(
+                needleYarnType = NeedleYarnType.YARN,
+                viewModel = viewModel,
+                isFirstField = false,
+                value = yarnValue,
+                onValueChange = { newValue ->
+                    when (index) {
+                        1 -> viewModel.yarn2 = newValue
+                        2 -> viewModel.yarn3 = newValue
+                        3 -> viewModel.yarn4 = newValue
+                        4 -> viewModel.yarn5 = newValue
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+fun TextFieldWithClearIcon(
     viewModel: AddKnitProjectViewModel,
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    firstNeedleField: Boolean
+    isFirstField: Boolean,
+    needleYarnType: NeedleYarnType
 ) {
 
     Row(
@@ -385,40 +310,35 @@ fun NeedleField (
 
         TextField(
             value = value,
-             onValueChange = { newValue ->
+            onValueChange = { newValue ->
                 onValueChange(newValue)
             },
-            label = { Text("Needle size") },
+            label = {
+                Text(
+                    if (needleYarnType == NeedleYarnType.NEEDLE_SIZE) {
+                        "Needle size"
+                    } else {
+                        "Yarn"
+                    }
+                )
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 5.dp),
             keyboardOptions = KeyboardOptions(
-                imeAction =  ImeAction.Next,
+                imeAction = ImeAction.Next,
                 keyboardType = KeyboardType.Number
             ),
-
-
-                    /* visualTransformation = { text ->
-                         val annotatedString = AnnotatedString.Builder().apply {
-                             append(text)
-                             append(" mm")
-                         }.toAnnotatedString()
-
-                         val offsetMapping = object : OffsetMapping {
-                             override fun originalToTransformed(offset: Int): Int {
-                                 return if (offset < text.length) offset else offset + 4
-                             }
-
-                             override fun transformedToOriginal(offset: Int): Int {
-                                 return if (offset < text.length) offset else offset - 4
-                             }
-                         }
-
-                         TransformedText(text= annotatedString, offsetMapping = offsetMapping)
-                     }*/
             trailingIcon = {
-                if (!firstNeedleField) {
-                    IconButton(onClick = { viewModel.deActivateNextNeedle() }) {
+                if (!isFirstField) {
+                    IconButton(onClick = {
+                        if (needleYarnType == NeedleYarnType.NEEDLE_SIZE) {
+                            viewModel.deactivateCurrentNeedleField()
+                        } else {
+                            viewModel.deActivateCurrentYarn()
+                        }
+                    }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Clear,
                             contentDescription = "Clear Text"
@@ -435,15 +355,13 @@ fun NeedleField (
     }
 }
 
-
-
-
-
 @Composable
-fun GaugeTitle () {
-    Row (modifier = Modifier
-        .fillMaxWidth()
-        .padding(start = 20.dp, top = 35.dp, bottom = 10.dp))
+fun GaugeTitle() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 20.dp, top = 35.dp, bottom = 10.dp)
+    )
     {
         Text(
             text = "Gauge 10x10 cm",
@@ -456,9 +374,8 @@ fun GaugeTitle () {
 }
 
 @Composable
-fun GaugeInputs (viewModel: AddKnitProjectViewModel) {
-
-    Row (
+fun GaugeInputs(viewModel: AddKnitProjectViewModel) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
@@ -476,13 +393,12 @@ fun GaugeInputs (viewModel: AddKnitProjectViewModel) {
         Text(text = "Stitches in")
         Spacer(modifier = Modifier.width(5.dp))
         GaugeInput(
-            value = viewModel.rowsAmount.toString(),
-            onValueChange = {newText -> viewModel.rowsAmount = newText.toInt()}
+            value = if (viewModel.rowsAmount == 0 ) "" else viewModel.rowsAmount.toString(),
+            onValueChange = { newText -> viewModel.rowsAmount = newText.toInt() }
         )
         Spacer(modifier = Modifier.width(5.dp))
         Text(text = "rows")
     }
-
 }
 
 @Composable
@@ -492,7 +408,7 @@ fun ProjectNotesInput(
 ) {
     OutlinedTextField(
         value = notes,
-        label = {Text("Project notes")},
+        label = { Text("Project notes") },
         onValueChange = onNotesChange,
         modifier = Modifier
             .fillMaxSize()
@@ -507,34 +423,35 @@ fun ProjectNotesInput(
 }
 
 @Composable
-fun GaugeInput (value: String,  onValueChange: (String) -> Unit) {
-    val focusManager = LocalFocusManager.current
+fun GaugeInput(value: String, onValueChange: (String) -> Unit) {
 
     OutlinedTextField(
         value = value,
         onValueChange = { newValue ->
-                        if (newValue.length <= 2) {
-                            onValueChange(newValue)
-                        }
+            if (newValue.length <= 2) {
+                onValueChange(newValue)
+            }
         },
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next, keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(
+            imeAction = ImeAction.Next,
+            keyboardType = KeyboardType.Number
+        ),
 
         modifier = Modifier
             .width(75.dp)
             .padding(10.dp)
-        )
+    )
 }
 
-
-
 @Composable
-fun AddBtnWithIcon (btnText: String, btnPressed: () -> Unit) {
-    Row (
+fun AddBtnWithIcon(
+    btnText: String,
+    btnPressed: () -> Unit
+) {
+    Row(
         modifier = Modifier
             .fillMaxSize()
             .padding(start = 20.dp, top = 10.dp)
-
-
     ) {
         Box(modifier = Modifier.clickable {
             btnPressed()
@@ -548,14 +465,15 @@ fun AddBtnWithIcon (btnText: String, btnPressed: () -> Unit) {
                 )
                 Text(
                     text = btnText,
-                    modifier = Modifier.padding(start = 10.dp))
+                    modifier = Modifier.padding(start = 10.dp)
+                )
             }
         }
     }
 }
 
 @Composable
-fun SaveBtn (viewModel: AddKnitProjectViewModel) {
+fun SaveBtn(viewModel: AddKnitProjectViewModel) {
 
     Row {
         Button(
@@ -572,39 +490,24 @@ fun SaveBtn (viewModel: AddKnitProjectViewModel) {
 }
 
 @Composable
-fun TextInput (value: String, label: String, onValueChange: (String) -> Unit, onNext: () -> Unit) {
-
-    val focusManager = LocalFocusManager.current
-
-    var keyboardType: KeyboardType = KeyboardType.Text
-
-    if (label == "Needle size") {
-        keyboardType = KeyboardType.Number
-    }
-
+fun TextInput(value: String, label: String, onValueChange: (String) -> Unit) {
 
     Row {
         TextField(
             value = value,
             onValueChange = { newText ->
-                            onValueChange(newText)
+                onValueChange(newText)
             },
             label = {
-                    Text(label)
+                Text(label)
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 5.dp),
             keyboardOptions = KeyboardOptions(
-                imeAction = if (label == "Project Notes" || label == "Needle size" || label == "Enter yarn you used") ImeAction.Done else ImeAction.Next,
-                keyboardType = keyboardType),
-            keyboardActions = KeyboardActions(
-
-                onDone = {
-                    onNext()
-                        focusManager.clearFocus()
-                }
+                imeAction = ImeAction.Next
             ),
+
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
@@ -613,8 +516,9 @@ fun TextInput (value: String, label: String, onValueChange: (String) -> Unit, on
         )
     }
 }
+
 @Composable
-fun AddImageBox( imagePressedAction: () -> Unit) {
+fun AddImageBox(imagePressedAction: () -> Unit) {
 
     Surface(
         modifier = Modifier
@@ -636,7 +540,7 @@ fun AddImageBox( imagePressedAction: () -> Unit) {
 
 
 @Composable
-fun SelectedImage (uri: Uri, onClickAction: () -> Unit) {
+fun SelectedImage(uri: Uri, onClickAction: () -> Unit) {
     AsyncImage(
         model = uri,
         contentDescription = null,
@@ -651,13 +555,14 @@ fun SelectedImage (uri: Uri, onClickAction: () -> Unit) {
 }
 
 @Composable
-fun Title () {
-
-    Row (
+fun Title() {
+    Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(top = 10.dp, bottom = 40.dp))
+        modifier = Modifier.padding(top = 10.dp, bottom = 40.dp)
+    )
     {
-        Text(text = "Add new project",
+        Text(
+            text = "Add new project",
             style = TextStyle(
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp

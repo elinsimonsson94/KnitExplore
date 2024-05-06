@@ -22,13 +22,21 @@ class AddKnitProjectViewModel : ViewModel() {
     var imageUriState by  mutableStateOf<Uri?>(null)
     var projectName by mutableStateOf("")
     var patternName by mutableStateOf("")
-    var needle1 by mutableStateOf(0.0)
-    var needle2 by mutableStateOf(0.0)
-    var needle3 by mutableStateOf(0.0)
-    var needle4 by mutableStateOf(0.0)
-    var needle5 by mutableStateOf(0.0)
+    var needle1 by mutableStateOf("")
+    var needle2 by mutableStateOf("")
+    var needle3 by mutableStateOf("")
+    var needle4 by mutableStateOf("")
+    var needle5 by mutableStateOf("")
     private var currentNeedle by mutableStateOf(0) //array always starts on 0
     var needleVisibilityList by mutableStateOf(listOf(true, false, false, false, false))
+    var yarn1 by mutableStateOf("")
+    var yarn2 by mutableStateOf("")
+    var yarn3 by mutableStateOf("")
+    var yarn4 by mutableStateOf("")
+    var yarn5 by mutableStateOf("")
+    private var currentYarn by mutableStateOf(0) //array always starts on 0
+    var yarnVisibilityList by mutableStateOf(listOf(true, false, false, false, false))
+
     var numberOfYarns by mutableIntStateOf(1)
     var stitchesAmount by mutableIntStateOf(0)
     var rowsAmount by mutableIntStateOf(0)
@@ -51,7 +59,16 @@ class AddKnitProjectViewModel : ViewModel() {
         }
     }
 
-    fun deActivateNextNeedle() {
+    fun activateNextYarn() {
+        currentYarn ++
+        if(currentYarn < yarnVisibilityList.size) {
+            yarnVisibilityList = yarnVisibilityList.toMutableList().also {
+                it[currentYarn] = true
+            }
+        }
+    }
+
+    fun deactivateCurrentNeedleField() {
         if (currentNeedle <= needleVisibilityList.size) {
             needleVisibilityList = needleVisibilityList.toMutableList().also {
                 it[currentNeedle] = false
@@ -59,22 +76,56 @@ class AddKnitProjectViewModel : ViewModel() {
         }
 
         when (currentNeedle) {
-            1 -> needle2 = 0.0
-            2 -> needle3 = 0.0
-            3 -> needle4 = 0.0
-            4 -> needle5 = 0.0
+            1 -> needle2 = ""
+            2 -> needle3 = ""
+            3 -> needle4 = ""
+            4 -> needle5 = ""
+        }
+        currentNeedle--
+    }
+
+    fun deActivateCurrentYarn() {
+        if (currentYarn <= yarnVisibilityList.size) {
+            yarnVisibilityList = yarnVisibilityList.toMutableList().also {
+                it[currentYarn] = false
+            }
         }
 
-        currentNeedle--
+        when (currentYarn) {
+            1 -> yarn2 = ""
+            2 -> yarn3 = ""
+            3 -> yarn4 = ""
+            4 -> yarn5 = ""
+        }
+        currentYarn--
+    }
+
+    private fun createYarnList () : List<String> {
+        val yarnList = mutableStateListOf<String>()
+
+        listOf(yarn1, yarn2, yarn3, yarn4, yarn5).forEach {newValue ->
+            if (newValue != "") {
+                yarnList.add(newValue)
+            }
+
+        }
+        return yarnList
     }
 
     private fun createNeedleList () : List<Double> {
         val needleValuesList = mutableStateListOf<Double>()
 
         listOf(needle1,needle2, needle3, needle4, needle5).forEach { newValue ->
-            if (newValue != 0.0) {
-                needleValuesList.add(newValue)
-            }
+           if (newValue != "") {
+               try {
+                   val value = newValue.toDouble()
+                   needleValuesList.add(value)
+                   Log.d("!!!", "success converted: $newValue")
+               } catch (e: NumberFormatException) {
+                   Log.d("!!!", "Error converting to Double")
+               }
+           }
+
         }
 
         /*needle1 = 0.0
@@ -103,9 +154,12 @@ class AddKnitProjectViewModel : ViewModel() {
     private fun saveKnitProjectToFirebase (imageUrl: String) {
         val currentUser = auth.currentUser
         val needleSizeList = createNeedleList()
+        val yarnList = createYarnList()
+        Log.d("!!!", "needleSizeList: ${needleSizeList.joinToString()} yarnList: ${yarnList.joinToString()}")
 
 
-        currentUser?.let {
+
+        /*currentUser?.let {
             val newKnitProject = KnitProject(
                 ownerName = "Elin",
                 userUid = currentUser.uid,
@@ -127,7 +181,7 @@ class AddKnitProjectViewModel : ViewModel() {
                 .addOnFailureListener { error ->
                     Log.w("!!!", "Error writing document, ", error)
                 }
-        }
+        }*/
     }
 
 
