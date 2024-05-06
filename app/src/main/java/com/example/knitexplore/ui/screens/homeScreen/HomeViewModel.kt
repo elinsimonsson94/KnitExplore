@@ -6,7 +6,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.example.knitexplore.data.KnitProject
+import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -52,13 +54,11 @@ class HomeViewModel : ViewModel() {
         _searchText.value = text
     }
 
-    fun onToggleSearch() {
-        _isSearching.value = !_isSearching.value
-        if (!_isSearching.value) {
-            onSearchTextChange("")
-        }
+    fun navigateToAddKnitProject (navController: NavHostController) {
+        val isEditing = false
+        val route = NavigationItem.AddKnitProject.createRoute(isEditing = isEditing)
+        navController.navigate(route)
     }
-
 
     fun fetchKnitProjects() {
         db.collection("knitProjects")

@@ -86,9 +86,10 @@ fun HomeScreen(navController: NavHostController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    val isEditing = true
+                          viewModel.navigateToAddKnitProject(navController)
+                   /* val isEditing = true
                     val route = NavigationItem.AddKnitProject.createRoute(isEditing = isEditing)
-                    navController.navigate(route)
+                    navController.navigate(route)*/
                      },
                 shape = CircleShape,
                 containerColor = softerOrangeColor

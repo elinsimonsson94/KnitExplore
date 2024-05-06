@@ -62,6 +62,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
 import com.example.knitexplore.data.NeedleYarnType
+import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
 import com.example.knitexplore.ui.theme.softerOrangeColor
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -73,12 +74,16 @@ fun AddKnitProject(navController: NavHostController, isEditing: Boolean) {
 
     val auth = Firebase.auth
     val currentUser = auth.currentUser
-    Log.d("!!!", "isEditing: $isEditing")
 
 
     val viewModel: AddKnitProjectViewModel = viewModel()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+
+    if (isEditing && !viewModel.fieldsUpdated) {
+        viewModel.isEditing = true
+        viewModel.updateFields()
+    }
 
     val singlePhotoPicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -112,7 +117,9 @@ fun AddKnitProject(navController: NavHostController, isEditing: Boolean) {
             TopAppBar(
                 title = { Text("") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = {
+                        viewModel.navigateBack(navController)
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
                 })
@@ -128,7 +135,7 @@ fun AddKnitProject(navController: NavHostController, isEditing: Boolean) {
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) {
             item {
-                Title()
+                Title(viewModel)
             }
             item {
                 Row(
@@ -393,7 +400,7 @@ fun GaugeInputs(viewModel: AddKnitProjectViewModel) {
         Text(text = "Stitches in")
         Spacer(modifier = Modifier.width(5.dp))
         GaugeInput(
-            value = if (viewModel.rowsAmount == 0 ) "" else viewModel.rowsAmount.toString(),
+            value = if (viewModel.rowsAmount == 0) "" else viewModel.rowsAmount.toString(),
             onValueChange = { newText -> viewModel.rowsAmount = newText.toInt() }
         )
         Spacer(modifier = Modifier.width(5.dp))
@@ -477,7 +484,14 @@ fun SaveBtn(viewModel: AddKnitProjectViewModel) {
 
     Row {
         Button(
-            onClick = { viewModel.saveImageToStorage() },
+            onClick = {
+
+                if (viewModel.imageUpdated || (viewModel.isEditing && !viewModel.imageUpdated)) {
+                    viewModel.checkImageAndUpdateFirebase()
+                } else {
+                    viewModel.saveImageToStorage()
+                }
+            },
             modifier = Modifier.width(200.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = softerOrangeColor
@@ -555,14 +569,18 @@ fun SelectedImage(uri: Uri, onClickAction: () -> Unit) {
 }
 
 @Composable
-fun Title() {
+fun Title(viewModel: AddKnitProjectViewModel) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(top = 10.dp, bottom = 40.dp)
     )
     {
         Text(
-            text = "Add new project",
+            text = if (viewModel.isEditing) {
+                "Edit your project"
+            } else {
+                   "Add new project"
+                   },
             style = TextStyle(
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp
