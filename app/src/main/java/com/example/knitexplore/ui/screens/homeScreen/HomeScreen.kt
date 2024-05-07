@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -69,15 +70,6 @@ fun HomeScreen(navController: NavHostController) {
 
     Scaffold(
         topBar = {
-            /* SearchBar(
-                 query = searchText,
-                 onQueryChange = viewModel::onSearchTextChange,
-                 onSearch = viewModel::onSearchTextChange,
-                 active = isSearching,
-                 onActiveChange = { viewModel.onToggleSearch() }
-             ) {
-                 Log.d("!!!", "knitProjects: $knitProjectsTest")
-             }*/
             SearchBar(
                 searchText = searchText,
                 onSearchTextChange = viewModel::onSearchTextChange
@@ -112,10 +104,17 @@ fun HomeScreen(navController: NavHostController) {
         }
 
         if (filteredProjects.isEmpty()) {
-            Text(
-                text = "No projects found",
-                modifier = Modifier.padding(16.dp)
-            )
+            Column (
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "No projects found",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
         } else {
             val gridState = rememberLazyGridState()
 
