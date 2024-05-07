@@ -10,12 +10,14 @@ import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.screens.addKnitProject.AddKnitProject
 import com.example.knitexplore.ui.screens.homeScreen.HomeScreen
 import com.example.knitexplore.ui.screens.knitProjectDetails.KnitProjectDetailsScreen
+import com.example.knitexplore.ui.screens.signIn.SignInScreen
 
 @Composable
 fun AppNavHost (
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    startDestination: String = NavigationItem.Home.route
+    startDestination: String = NavigationItem.SignIn.route
+   // startDestination: String = NavigationItem.Home.route
 ) {
     NavHost(
         modifier = modifier,
@@ -31,6 +33,9 @@ fun AppNavHost (
         }
         composable(NavigationItem.KnitProjectDetails.route) {
             KnitProjectDetailsScreen(navController)
+        }
+        composable(NavigationItem.SignIn.route) {
+            SignInScreen(navController = navController)
         }
     }
 }
