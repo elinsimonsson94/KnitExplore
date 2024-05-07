@@ -1,6 +1,7 @@
 package com.example.knitexplore.ui.screens.signIn
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.knitexplore.R
+import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.screens.addKnitProject.TextInput
 import com.example.knitexplore.ui.theme.softerOrangeColor
 
@@ -45,22 +46,14 @@ fun SignInScreen(navController: NavHostController) {
     ) {
         LogoImage()
         WelcomeTitle()
-        EmailAndPassword(viewModel = viewModel)
-       /* TextInput(
-            value = viewModel.email,
-            label = "Enter your Email",
-            onValueChange = {
-                viewModel.email = it
-            })
-        PasswordInput(viewModel = viewModel)
-        DoNotHaveAccountRow(viewModel = viewModel)*/
-        LogInBtn(viewModel = viewModel)
+        LogInForm(viewModel = viewModel, navController)
+        LogInBtn(viewModel = viewModel, navController)
 
     }
 }
 
 @Composable
-fun EmailAndPassword (viewModel: SignInViewModel) {
+fun LogInForm (viewModel: SignInViewModel, navController: NavHostController) {
     Column {
         TextInput(
             value = viewModel.email,
@@ -68,8 +61,12 @@ fun EmailAndPassword (viewModel: SignInViewModel) {
             onValueChange = {
                 viewModel.email = it
             })
-        PasswordInput(viewModel = viewModel)
-        DoNotHaveAccountRow(viewModel = viewModel)
+        PasswordInput(value = viewModel.password,
+            label = "Enter your Password",
+            onValueChange = {
+                viewModel.password = it
+            })
+        DoNotHaveAccountRow(navController = navController)
     }
 }
 
@@ -82,13 +79,13 @@ fun LogoImage () {
 }
 
 @Composable
-fun LogInBtn(viewModel: SignInViewModel) {
+fun LogInBtn(viewModel: SignInViewModel, navController: NavHostController) {
     Row(
         modifier = Modifier.padding(top = 50.dp)
     ) {
         Button(
             onClick = {
-                // Log in
+                viewModel.signIn(navController)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -107,14 +104,22 @@ fun LogInBtn(viewModel: SignInViewModel) {
 }
 
 @Composable
-fun DoNotHaveAccountRow(viewModel: SignInViewModel) {
+fun DoNotHaveAccountRow(navController: NavHostController) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 25.dp, vertical = 10.dp)
     ) {
         Text(text = "Don't have an account? ")
-        Text(text = "Sign up", style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold, color = softerOrangeColor))
+        Text(text = "Sign up",
+            style = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = softerOrangeColor),
+            modifier = Modifier.clickable {
+                navController.navigate(NavigationItem.SignUp.route)
+            }
+        )
     }
 }
 
@@ -128,17 +133,15 @@ fun WelcomeTitle() {
 }
 
 @Composable
-fun PasswordInput(viewModel: SignInViewModel) {
-    Row(
-        modifier = Modifier.padding(vertical = 10.dp)
-    ) {
+fun PasswordInput(value: String, label: String, onValueChange: (String) -> Unit) {
+    Row{
         TextField(
-            value = viewModel.password,
+            value = value,
             onValueChange = { newText ->
-                viewModel.password = newText
+                onValueChange(newText)
             },
             label = {
-                Text("Enter your password")
+                Text(label)
             },
             modifier = Modifier
                 .fillMaxWidth()

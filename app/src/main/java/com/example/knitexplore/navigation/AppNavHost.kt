@@ -8,16 +8,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.screens.addKnitProject.AddKnitProject
+import com.example.knitexplore.ui.screens.allKnitProjects.AllKnitProjects
 import com.example.knitexplore.ui.screens.homeScreen.HomeScreen
 import com.example.knitexplore.ui.screens.knitProjectDetails.KnitProjectDetailsScreen
 import com.example.knitexplore.ui.screens.signIn.SignInScreen
+import com.example.knitexplore.ui.screens.signUp.SignUpScreen
 
 @Composable
 fun AppNavHost (
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    startDestination: String = NavigationItem.SignIn.route
-   // startDestination: String = NavigationItem.Home.route
+    startDestination: String = NavigationItem.Home.route
 ) {
     NavHost(
         modifier = modifier,
@@ -26,6 +27,9 @@ fun AppNavHost (
     ) {
         composable(NavigationItem.Home.route) {
             HomeScreen(navController)
+        }
+        composable(NavigationItem.AllKnitProjects.route) {
+            AllKnitProjects(navController = navController)
         }
         composable(route = NavigationItem.AddKnitProject.route) {
             val isEditing = it.arguments?.getString("isEditing")?.toBoolean() ?: false
@@ -36,6 +40,9 @@ fun AppNavHost (
         }
         composable(NavigationItem.SignIn.route) {
             SignInScreen(navController = navController)
+        }
+        composable(NavigationItem.SignUp.route) {
+            SignUpScreen(navController = navController)
         }
     }
 }
