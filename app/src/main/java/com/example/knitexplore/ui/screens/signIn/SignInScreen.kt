@@ -34,7 +34,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.knitexplore.R
 import com.example.knitexplore.data.NavigationItem
-import com.example.knitexplore.ui.screens.addKnitProject.TextInput
+import com.example.knitexplore.ui.components.LogoImage
+import com.example.knitexplore.ui.components.PasswordInput
+import com.example.knitexplore.ui.components.TextInput
 import com.example.knitexplore.ui.theme.softerOrangeColor
 
 @Composable
@@ -82,13 +84,7 @@ fun LogInForm (viewModel: SignInViewModel, navController: NavHostController) {
 
 }
 
-@Composable
-fun LogoImage () {
-    Image(
-        painter = painterResource(id = R.drawable.logo),
-        contentDescription = "null",
-        Modifier.size(100.dp))
-}
+
 
 @Composable
 fun LogInBtn(viewModel: SignInViewModel, navController: NavHostController) {
@@ -145,31 +141,5 @@ fun WelcomeTitle() {
     }
 }
 
-@Composable
-fun PasswordInput(value: String, label: String, onValueChange: (String) -> Unit) {
-    Row{
-        TextField(
-            value = value,
-            onValueChange = { newText ->
-                onValueChange(newText)
-            },
-            label = {
-                Text(label)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 5.dp),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Password
-            ),
-            visualTransformation = PasswordVisualTransformation(),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-            )
-        )
-    }
-}
+
 

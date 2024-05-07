@@ -73,9 +73,6 @@ fun AllKnitProjects(navController: NavHostController) {
             FloatingActionButton(
                 onClick = {
                     viewModel.navigateToAddKnitProject(navController)
-                    /* val isEditing = true
-                     val route = NavigationItem.AddKnitProject.createRoute(isEditing = isEditing)
-                     navController.navigate(route)*/
                 },
                 shape = CircleShape,
                 containerColor = softerOrangeColor

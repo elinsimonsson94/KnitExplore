@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import androidx.navigation.NavHostController
-import com.example.knitexplore.ui.screens.addKnitProject.TextInput
-import com.example.knitexplore.ui.screens.signIn.LogoImage
-import com.example.knitexplore.ui.screens.signIn.PasswordInput
+import com.example.knitexplore.ui.components.LogoImage
+import com.example.knitexplore.ui.components.PasswordInput
+import com.example.knitexplore.ui.components.TextInput
 import com.example.knitexplore.ui.theme.softerOrangeColor
 
 @Composable
