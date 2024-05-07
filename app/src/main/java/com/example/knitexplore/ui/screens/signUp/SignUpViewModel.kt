@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.data.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 
@@ -21,8 +24,21 @@ class SignUpViewModel : ViewModel() {
     var lastName by mutableStateOf("")
     private val auth: FirebaseAuth = Firebase.auth
     private val db = Firebase.firestore
+    val toastMessage = MutableLiveData<String>()
+    var showedToastMessage by mutableStateOf(false)
 
-    fun signInEmailAndPassword(navController: NavHostController) {
+    fun validateAndSignUp(navController: NavHostController) {
+        showedToastMessage = false
+        if (email != "" && password != "" && firstName != "" && lastName != "" && password == repeatPassword) {
+            signInEmailAndPassword(navController)
+        } else if (password != repeatPassword) {
+            toastMessage.value = "Passwords do not match"
+        } else {
+            toastMessage.value = "You need enter all fields"
+        }
+    }
+
+    private fun signInEmailAndPassword(navController: NavHostController) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -33,8 +49,15 @@ class SignUpViewModel : ViewModel() {
                         lastName = lastName
                     )
                     saveUserData(newUser, navController)
-                } else if (!task.isSuccessful) {
-                    Log.w("!!!", "Failed to create the email and password signIn")
+                } else {
+                    val errorMessage = when (task.exception) {
+                        is FirebaseAuthWeakPasswordException -> "Weak password. Please enter a stronger password."
+                        is FirebaseAuthInvalidCredentialsException -> "Invalid email format. Please enter a valid email."
+                        else -> "Failed to create the account. Please try again."
+                    }
+
+                    toastMessage.value = errorMessage
+                    Log.w("!!!", "signUpWithEmail:failure", task.exception)
                 }
             }
     }

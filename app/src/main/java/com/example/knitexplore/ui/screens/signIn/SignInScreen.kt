@@ -1,5 +1,6 @@
 package com.example.knitexplore.ui.screens.signIn
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -37,6 +40,8 @@ import com.example.knitexplore.ui.theme.softerOrangeColor
 @Composable
 fun SignInScreen(navController: NavHostController) {
     val viewModel: SignInViewModel = viewModel()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -49,6 +54,12 @@ fun SignInScreen(navController: NavHostController) {
         LogInForm(viewModel = viewModel, navController)
         LogInBtn(viewModel = viewModel, navController)
 
+        viewModel.toastMessage.observe(lifecycleOwner) { message ->
+            if (!viewModel.showedToastMessage) {
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+                viewModel.showedToastMessage = true
+            }
+        }
     }
 }
 
@@ -68,6 +79,7 @@ fun LogInForm (viewModel: SignInViewModel, navController: NavHostController) {
             })
         DoNotHaveAccountRow(navController = navController)
     }
+
 }
 
 @Composable
@@ -85,7 +97,8 @@ fun LogInBtn(viewModel: SignInViewModel, navController: NavHostController) {
     ) {
         Button(
             onClick = {
-                viewModel.signIn(navController)
+                //viewModel.signIn(navController
+                      viewModel.validateAndSignIn(navController)
             },
             modifier = Modifier
                 .fillMaxWidth()

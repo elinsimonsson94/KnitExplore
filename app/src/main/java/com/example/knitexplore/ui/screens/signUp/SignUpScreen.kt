@@ -1,5 +1,6 @@
 package com.example.knitexplore.ui.screens.signUp
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,6 +31,10 @@ import com.example.knitexplore.ui.theme.softerOrangeColor
 @Composable
 fun SignUpScreen (navController: NavHostController) {
     val viewModel : SignUpViewModel = viewModel()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
+
+
     Column (
         modifier = Modifier
             .fillMaxSize(),
@@ -38,6 +45,12 @@ fun SignUpScreen (navController: NavHostController) {
         SignInTitle()
         RegisterForm(viewModel = viewModel, navController)
         SignUpBtn(viewModel = viewModel, navController)
+    }
+    viewModel.toastMessage.observe(lifecycleOwner) { message ->
+        if (!viewModel.showedToastMessage) {
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            viewModel.showedToastMessage = true
+        }
     }
 }
 
@@ -66,7 +79,8 @@ fun AlreadyHaveAccount (navController: NavHostController) {
 fun SignUpBtn (viewModel: SignUpViewModel, navController: NavHostController) {
     Button(
         onClick = {
-            viewModel.signInEmailAndPassword(navController)
+                  viewModel.validateAndSignUp(navController)
+            //viewModel.signInEmailAndPassword(navController)
         },
         modifier = Modifier
             .fillMaxWidth()
