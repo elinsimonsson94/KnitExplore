@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -41,15 +40,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -62,11 +58,10 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
 import com.example.knitexplore.data.NeedleYarnType
-import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
+import com.example.knitexplore.ui.components.TextInput
 import com.example.knitexplore.ui.theme.softerOrangeColor
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.protobuf.FieldType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -531,34 +526,6 @@ fun SaveBtn(viewModel: AddKnitProjectViewModel) {
                 fontSize = 16.sp
             )
         }
-    }
-}
-
-@Composable
-fun TextInput(value: String, label: String, onValueChange: (String) -> Unit) {
-
-    Row {
-        TextField(
-            value = value,
-            onValueChange = { newText ->
-                onValueChange(newText)
-            },
-            label = {
-                Text(label)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 5.dp),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next
-            ),
-
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-            )
-        )
     }
 }
 
