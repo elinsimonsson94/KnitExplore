@@ -1,6 +1,7 @@
 package com.example.knitexplore.ui.screens.homeScreen
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -19,15 +21,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import com.example.knitexplore.ui.theme.softerOrangeColor
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -54,20 +63,31 @@ fun HomeScreen(navController: NavHostController) {
     val viewModel: HomeViewModel = viewModel()
     val knitProjects by viewModel.knitProjects.observeAsState(initial = emptyList())
     viewModel.fetchKnitProjects()
+    val searchText by viewModel.searchText.collectAsState()
+    val isSearching by viewModel.isSearching.collectAsState()
+    val knitProjectsTest by viewModel.knitProjectList.collectAsState()
 
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "All knit projects") },
+            SearchBar(
+                searchText = searchText,
+                onSearchTextChange = viewModel::onSearchTextChange
             )
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { navController.navigate(NavigationItem.AddKnitProject.route) },
+                onClick = {
+                          viewModel.navigateToAddKnitProject(navController)
+                   /* val isEditing = true
+                    val route = NavigationItem.AddKnitProject.createRoute(isEditing = isEditing)
+                    navController.navigate(route)*/
+                     },
                 shape = CircleShape,
-                containerColor = softerOrangeColor) {
-                Icon(Icons.Filled.Add,
+                containerColor = softerOrangeColor
+            ) {
+                Icon(
+                    Icons.Filled.Add,
                     contentDescription = "Add",
                     tint = Color.White
                 )
@@ -75,8 +95,26 @@ fun HomeScreen(navController: NavHostController) {
         }
     ) { innerPadding ->
 
-        if (knitProjects.isEmpty()) {
-            Text(text = "Det verkar vara tomt här")
+        val filteredProjects = if (searchText.isNotBlank()) {
+            knitProjects.filter { project ->
+                project.patternName.contains(searchText, ignoreCase = true)
+            }
+        } else {
+            knitProjects
+        }
+
+        if (filteredProjects.isEmpty()) {
+            Column (
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "No projects found",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+
         } else {
             val gridState = rememberLazyGridState()
 
@@ -88,7 +126,7 @@ fun HomeScreen(navController: NavHostController) {
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 horizontalArrangement = Arrangement.spacedBy(30.dp)
             ) {
-                itemsIndexed(knitProjects) { _, knitProject ->
+                itemsIndexed(filteredProjects) { _, knitProject ->
                     KnitProjectGridCell(knitProject = knitProject) {
                         viewModel.setSelectedKnitProject(knitProject)
 
@@ -96,11 +134,70 @@ fun HomeScreen(navController: NavHostController) {
                     }
                 }
             }
-
         }
     }
 
 }
+
+
+/*@Composable
+fun SearchBar(searchText: String, onSearchTextChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = searchText,
+        onValueChange = onSearchTextChange,
+        modifier = Modifier.fillMaxWidth(),
+        label = { Text("Search") }
+    )
+}*/
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchBar(searchText: String, onSearchTextChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = searchText,
+        onValueChange = onSearchTextChange,
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Filled.Search,
+                contentDescription = "Search",
+                tint = Color.Gray
+            )
+        },
+        trailingIcon = {
+            if (searchText.isNotEmpty()) {
+                IconButton(
+                    onClick = { onSearchTextChange("") },
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = "Clear",
+                        tint = Color.Gray
+                    )
+                }
+            }
+        },
+        placeholder = {
+            Text(
+                "Search Pattern",
+                color = Color.Gray,
+                style = TextStyle(fontSize = 17.sp)
+            )
+        },
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
+            .background(Color(0xFFECEFF1), RoundedCornerShape(40.dp)),
+        colors = OutlinedTextFieldDefaults.colors(
+            cursorColor = Color.Black,
+            focusedBorderColor = Color.Transparent,
+            unfocusedBorderColor = Color.Transparent,
+        )
+    )
+}
+
 
 @Composable
 fun KnitProjectGridCell(knitProject: KnitProject, knitProjectPressed: () -> Unit) {
