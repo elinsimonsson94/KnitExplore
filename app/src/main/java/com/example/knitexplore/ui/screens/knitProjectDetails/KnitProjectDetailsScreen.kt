@@ -50,7 +50,6 @@ fun KnitProjectDetailsScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxSize()
         ) {
             item {
-                Log.d("!!!", "image: ${selectedKnitProject?.imageUrl}")
                 LargeImage(url = selectedKnitProject!!.imageUrl)
             }
             item {

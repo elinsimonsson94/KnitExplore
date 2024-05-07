@@ -27,7 +27,6 @@ class HomeViewModel : ViewModel() {
 
 
     fun checkIfLoggedIn(navController: NavHostController) {
-        auth.signOut()
         val currentUser = auth.currentUser
         if (currentUser != null) {
             navController.navigate(NavigationItem.AllKnitProjects.route)

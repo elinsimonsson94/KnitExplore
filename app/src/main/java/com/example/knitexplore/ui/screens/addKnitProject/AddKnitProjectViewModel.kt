@@ -11,6 +11,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import com.example.knitexplore.data.KnitProject
+import com.example.knitexplore.data.User
 import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -43,7 +44,6 @@ class AddKnitProjectViewModel : ViewModel() {
     var rowsAmount by mutableIntStateOf(0)
     var projectNotes by mutableStateOf("")
 
-    private val yarns = mutableStateListOf<String>()
 
     private var storageRef = Firebase.storage.reference
     private var db = Firebase.firestore
@@ -54,6 +54,11 @@ class AddKnitProjectViewModel : ViewModel() {
     var fieldsUpdated by mutableStateOf(false)
     var imageUpdated by mutableStateOf(false)
     var isEditing by mutableStateOf(false)
+    var user : User? = null
+
+    init {
+        fetchUser()
+    }
 
 
     fun navigateBack(navController: NavHostController) {
@@ -213,7 +218,6 @@ class AddKnitProjectViewModel : ViewModel() {
                 try {
                     val value = newValue.toDouble()
                     needleValuesList.add(value)
-                    Log.d("!!!", "success converted: $newValue")
                 } catch (e: NumberFormatException) {
                     Log.d("!!!", "Error converting to Double")
                 }
@@ -231,10 +235,11 @@ class AddKnitProjectViewModel : ViewModel() {
         val currentUser = auth.currentUser
         val needleSizeList = createNeedleList()
         val yarnList = createYarnList()
+        val userName = "${user?.firstName} ${user?.lastName}"
 
         currentUser?.let {
             val newKnitProject = KnitProject(
-                ownerName = "Elin",
+                ownerName = userName,
                 userUid = currentUser.uid,
                 imageUrl = imageUrl,
                 projectName = projectName,
@@ -246,7 +251,6 @@ class AddKnitProjectViewModel : ViewModel() {
                 projectNotes = projectNotes
             )
 
-            Log.d("!!!", "knitProject: $newKnitProject")
             db.collection("knitProjects")
                 .add(newKnitProject)
                 .addOnSuccessListener {
@@ -258,50 +262,29 @@ class AddKnitProjectViewModel : ViewModel() {
         }
     }
 
-    /*fun checkImageAndUpdateFirebase() {
-        if (imageUpdated) {
-            val oldImage = knitProject?.imageUrl.toString()
-            val storageRef = Firebase.storage.getReferenceFromUrl(oldImage)
+    fun fetchUser () {
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            val userUid = currentUser.uid
 
-            storageRef.delete()
-                .addOnSuccessListener {
-                    Log.d("!!!", "Image successfully deleted")
-                    updateImage()
+            db.collection("users").document(userUid)
+                .get().addOnSuccessListener { snapshot ->
+
+                    try {
+                        val fetchedUser = snapshot.toObject(User::class.java)
+                       if (fetchedUser != null) {
+                           user = fetchedUser
+                           Log.d("!!!", "user first name: ${user?.firstName}")
+                       }
+                    } catch (e: Exception) {
+                        Log.w("!!!", "Error converting user data: $e")
+                    }
                 }
-                .addOnFailureListener { e ->
-                    Log.w("!!!", "Error deleting image", e)
+                .addOnFailureListener { e->
+                    Log.d("!!!", "failed fetching userData: $e")
                 }
-        } else {
-            knitProject?.let {
-                updateFirebase(it.imageUrl)
-            }
         }
-    }*/
-
-   /* fun updateImage() {
-        val formatter = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-        val now = Date()
-        val fileName = formatter.format(now)
-        val newImageRef = storageRef.child("$fileName.jpg")
-
-        val uploadTask = imageUriState?.let { newImageRef.putFile(it) }
-
-        uploadTask?.continueWithTask { task ->
-            if (!task.isSuccessful) {
-                task.exception?.let {
-                    throw it
-                }
-            }
-            newImageRef.downloadUrl
-        }?.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val downloadUrl = task.result.toString()
-                updateFirebase(downloadUrl)
-            } else {
-                Log.d("!!!", "failed to download uri ${task.exception}")
-            }
-        }
-    }*/
+    }
 
     fun uploadImage( onSuccess: (String) -> Unit) {
         imageUriState?.let { uri ->
