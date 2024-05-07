@@ -57,7 +57,9 @@ class AddKnitProjectViewModel : ViewModel() {
 
 
     fun navigateBack(navController: NavHostController) {
-        knitProjectViewModel.setSelectedKnitProject(oldKnitProject!!)
+        if (isEditing) {
+            knitProjectViewModel.setSelectedKnitProject(oldKnitProject!!)
+        }
         navController.navigateUp()
     }
 
@@ -256,7 +258,7 @@ class AddKnitProjectViewModel : ViewModel() {
         }
     }
 
-    fun checkImageAndUpdateFirebase() {
+    /*fun checkImageAndUpdateFirebase() {
         if (imageUpdated) {
             val oldImage = knitProject?.imageUrl.toString()
             val storageRef = Firebase.storage.getReferenceFromUrl(oldImage)
@@ -274,9 +276,9 @@ class AddKnitProjectViewModel : ViewModel() {
                 updateFirebase(it.imageUrl)
             }
         }
-    }
+    }*/
 
-    fun updateImage() {
+   /* fun updateImage() {
         val formatter = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
         val now = Date()
         val fileName = formatter.format(now)
@@ -297,6 +299,81 @@ class AddKnitProjectViewModel : ViewModel() {
                 updateFirebase(downloadUrl)
             } else {
                 Log.d("!!!", "failed to download uri ${task.exception}")
+            }
+        }
+    }*/
+
+    fun uploadImage( onSuccess: (String) -> Unit) {
+        imageUriState?.let { uri ->
+            val formatter = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+            val now = Date()
+            val fileName = formatter.format(now)
+            val newImageRef = storageRef.child("$fileName.jpg")
+
+            val uploadTask = newImageRef.putFile(uri)
+
+            uploadTask.continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    task.exception?.let {
+                        throw it
+                    }
+                }
+                newImageRef.downloadUrl
+            }.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val downloadUrl = task.result.toString()
+                    onSuccess(downloadUrl)
+                } else {
+                    Log.d("!!!", "Failed to upload image: ${task.exception}")
+                }
+            }
+        }
+    }
+
+    fun deleteOldImage() {
+        val oldImageUrl = knitProject?.imageUrl.toString()
+        if (oldImageUrl.isNotEmpty()) {
+            val oldImageRef = Firebase.storage.getReferenceFromUrl(oldImageUrl)
+            oldImageRef.delete()
+                .addOnSuccessListener {
+                    Log.d("!!!", "Old image deleted successfully")
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("!!!", "Failed to delete old image: $exception")
+                }
+        }
+    }
+
+    fun deleteKnitProjectData(navController: NavHostController) {
+        deleteOldImage()
+        val documentId = knitProject?.documentId as String
+
+        val docRef = db.collection("knitProjects").document(documentId)
+
+        docRef.delete()
+            .addOnSuccessListener {
+                Log.d("!!!", "knitProject successfully deleted")
+                navController.navigateUp()
+                navController.navigateUp()
+            }
+            .addOnFailureListener { e ->
+                Log.w("!!!", "Error delete project: $e")
+            }
+    }
+
+
+    fun saveOrUpdateFirebaseData () {
+        if (isEditing && imageUpdated) {
+            uploadImage() { downloadUrl ->
+                deleteOldImage()
+                updateFirebase(downloadUrl)
+            }
+        } else if (isEditing && !imageUpdated) {
+            val oldImage = knitProject?.imageUrl.toString()
+            updateFirebase(oldImage)
+        } else {
+            uploadImage { downloadUrl ->
+                saveKnitProjectToFirebase(downloadUrl)
             }
         }
     }
@@ -334,38 +411,6 @@ class AddKnitProjectViewModel : ViewModel() {
                     .addOnFailureListener { error ->
                         Log.d("!!!", "Error writing document", error)
                     }
-            }
-        }
-    }
-
-
-    fun saveImageToStorage() {
-
-        val formatter = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-        val now = Date()
-        val fileName = formatter.format(now)
-        val newImageRef = storageRef.child("$fileName.jpg")
-
-        val uploadTask = imageUriState?.let { newImageRef.putFile(it) }
-
-        uploadTask?.continueWithTask { task ->
-            if (!task.isSuccessful) {
-                task.exception?.let {
-                    throw it
-                }
-            }
-            newImageRef.downloadUrl
-        }?.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val downloadUrl = task.result.toString()
-                Log.d("!!!", "url som hämtats: $downloadUrl")
-                if (isEditing) {
-                    updateFirebase(downloadUrl)
-                } else {
-                    saveKnitProjectToFirebase(downloadUrl)
-                }
-            } else {
-                Log.d("!!!", "failed to download uri ${task.exception}")
             }
         }
     }

@@ -208,6 +208,7 @@ fun AddKnitProject(navController: NavHostController, isEditing: Boolean) {
             }
             item {
                 SaveBtn(viewModel = viewModel)
+                DeleteBtn(viewModel = viewModel, navController = navController)
             }
             item {
                 Spacer(modifier = Modifier.height(50.dp))
@@ -480,17 +481,36 @@ fun AddBtnWithIcon(
 }
 
 @Composable
+fun DeleteBtn(viewModel: AddKnitProjectViewModel, navController: NavHostController) {
+    if (viewModel.isEditing) {
+        Row (
+            modifier = Modifier.padding(top = 20.dp)
+        ) {
+            Button(
+                onClick = {
+                    viewModel.deleteKnitProjectData(navController)
+                },
+                modifier = Modifier.width(200.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                )
+            )
+            {
+                Text(text = "Delete this project", fontSize = 16.sp)
+            }
+        }
+    }
+}
+
+@Composable
 fun SaveBtn(viewModel: AddKnitProjectViewModel) {
 
-    Row {
+    Row (
+        modifier = Modifier.padding(top = 10.dp)
+    ) {
         Button(
             onClick = {
-
-                if (viewModel.imageUpdated || (viewModel.isEditing && !viewModel.imageUpdated)) {
-                    viewModel.checkImageAndUpdateFirebase()
-                } else {
-                    viewModel.saveImageToStorage()
-                }
+                viewModel.saveOrUpdateFirebaseData()
             },
             modifier = Modifier.width(200.dp),
             colors = ButtonDefaults.buttonColors(
@@ -498,7 +518,14 @@ fun SaveBtn(viewModel: AddKnitProjectViewModel) {
             )
         )
         {
-            Text(text = "Save")
+            Text(
+                text = if (viewModel.isEditing) {
+                    "Save changes"
+                } else {
+                    "Save"
+                },
+                fontSize = 16.sp
+            )
         }
     }
 }
@@ -579,8 +606,8 @@ fun Title(viewModel: AddKnitProjectViewModel) {
             text = if (viewModel.isEditing) {
                 "Edit your project"
             } else {
-                   "Add new project"
-                   },
+                "Add new project"
+            },
             style = TextStyle(
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp
