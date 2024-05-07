@@ -8,8 +8,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.screens.addKnitProject.AddKnitProject
+import com.example.knitexplore.ui.screens.allKnitProjects.AllKnitProjects
 import com.example.knitexplore.ui.screens.homeScreen.HomeScreen
 import com.example.knitexplore.ui.screens.knitProjectDetails.KnitProjectDetailsScreen
+import com.example.knitexplore.ui.screens.signIn.SignInScreen
+import com.example.knitexplore.ui.screens.signUp.SignUpScreen
 
 @Composable
 fun AppNavHost (
@@ -25,12 +28,21 @@ fun AppNavHost (
         composable(NavigationItem.Home.route) {
             HomeScreen(navController)
         }
+        composable(NavigationItem.AllKnitProjects.route) {
+            AllKnitProjects(navController = navController)
+        }
         composable(route = NavigationItem.AddKnitProject.route) {
             val isEditing = it.arguments?.getString("isEditing")?.toBoolean() ?: false
             AddKnitProject(navController = navController, isEditing = isEditing )
         }
         composable(NavigationItem.KnitProjectDetails.route) {
             KnitProjectDetailsScreen(navController)
+        }
+        composable(NavigationItem.SignIn.route) {
+            SignInScreen(navController = navController)
+        }
+        composable(NavigationItem.SignUp.route) {
+            SignUpScreen(navController = navController)
         }
     }
 }

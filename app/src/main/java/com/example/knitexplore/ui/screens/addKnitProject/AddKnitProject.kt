@@ -268,7 +268,7 @@ fun YarnInputs(viewModel: AddKnitProjectViewModel) {
             needleYarnType = NeedleYarnType.YARN,
             viewModel = viewModel,
             isFirstField = true,
-            value = viewModel.yarn1.toString(),
+            value = viewModel.yarn1,
             onValueChange = { newValue ->
                 viewModel.yarn1 = newValue
             },
@@ -311,6 +311,10 @@ fun TextFieldWithClearIcon(
     needleYarnType: NeedleYarnType
 ) {
 
+    var keyboardType = KeyboardType.Number
+    if (needleYarnType == NeedleYarnType.YARN) {
+        keyboardType = KeyboardType.Text
+    }
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -335,7 +339,7 @@ fun TextFieldWithClearIcon(
                 .padding(horizontal = 20.dp, vertical = 5.dp),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.Number
+                keyboardType = keyboardType
             ),
             trailingIcon = {
                 if (!isFirstField) {
