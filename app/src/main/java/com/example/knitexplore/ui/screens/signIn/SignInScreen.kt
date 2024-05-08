@@ -1,7 +1,6 @@
 package com.example.knitexplore.ui.screens.signIn
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,39 +8,27 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import com.example.knitexplore.R
-import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.components.LogoImage
 import com.example.knitexplore.ui.components.PasswordInput
 import com.example.knitexplore.ui.components.TextInput
+import com.example.knitexplore.ui.shared.viewModels.AuthViewModel
 import com.example.knitexplore.ui.theme.softerOrangeColor
 
 @Composable
-fun SignInScreen(navController: NavHostController) {
-    val viewModel: SignInViewModel = viewModel()
+fun SignInScreen( viewModel: AuthViewModel) {
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
 
@@ -53,20 +40,20 @@ fun SignInScreen(navController: NavHostController) {
     ) {
         LogoImage()
         WelcomeTitle()
-        LogInForm(viewModel = viewModel, navController)
-        LogInBtn(viewModel = viewModel, navController)
+        LogInForm(viewModel)
+        LogInBtn(viewModel)
 
-        viewModel.toastMessage.observe(lifecycleOwner) { message ->
-            if (!viewModel.showedToastMessage) {
+        viewModel.toastMessageLogIn.observe(lifecycleOwner) { message ->
+            if (!viewModel.showedToastMessageLogIn) {
                 Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-                viewModel.showedToastMessage = true
+                viewModel.showedToastMessageLogIn = true
             }
         }
     }
 }
 
 @Composable
-fun LogInForm (viewModel: SignInViewModel, navController: NavHostController) {
+fun LogInForm (viewModel: AuthViewModel) {
     Column {
         TextInput(
             value = viewModel.email,
@@ -79,7 +66,7 @@ fun LogInForm (viewModel: SignInViewModel, navController: NavHostController) {
             onValueChange = {
                 viewModel.password = it
             })
-        DoNotHaveAccountRow(navController = navController)
+        DoNotHaveAccountRow(viewModel)
     }
 
 }
@@ -87,14 +74,15 @@ fun LogInForm (viewModel: SignInViewModel, navController: NavHostController) {
 
 
 @Composable
-fun LogInBtn(viewModel: SignInViewModel, navController: NavHostController) {
+fun LogInBtn(authViewModel: AuthViewModel) {
     Row(
         modifier = Modifier.padding(top = 50.dp)
     ) {
         Button(
             onClick = {
+                      authViewModel.validateAndSignIn()
                 //viewModel.signIn(navController
-                      viewModel.validateAndSignIn(navController)
+                     // viewModel.validateAndSignIn(navController)
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -113,7 +101,7 @@ fun LogInBtn(viewModel: SignInViewModel, navController: NavHostController) {
 }
 
 @Composable
-fun DoNotHaveAccountRow(navController: NavHostController) {
+fun DoNotHaveAccountRow(viewModel: AuthViewModel) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -126,7 +114,7 @@ fun DoNotHaveAccountRow(navController: NavHostController) {
                 fontWeight = FontWeight.Bold,
                 color = softerOrangeColor),
             modifier = Modifier.clickable {
-                navController.navigate(NavigationItem.SignUp.route)
+                viewModel.toggleSignUpScreenVisibility()
             }
         )
     }

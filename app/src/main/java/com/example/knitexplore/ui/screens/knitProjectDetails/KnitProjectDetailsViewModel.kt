@@ -9,8 +9,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
+import com.example.knitexplore.data.BottomNavItem
 import com.example.knitexplore.data.KnitProject
-import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -66,7 +66,7 @@ class KnitProjectDetailsViewModel : ViewModel() {
         knitProjectInstance?.let {
             knitProjectViewModel.setSelectedKnitProject(it)
             val isEditing = true
-            val route = NavigationItem.AddKnitProject.createRoute(isEditing = isEditing)
+            val route = BottomNavItem.AddKnitProject.createRoute(isEditing = isEditing)
             navController.navigate(route)
         }
     }

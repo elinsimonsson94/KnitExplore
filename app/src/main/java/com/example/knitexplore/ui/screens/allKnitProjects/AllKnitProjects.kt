@@ -48,8 +48,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.knitexplore.data.BottomNavItem
 import com.example.knitexplore.data.KnitProject
-import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.theme.softerOrangeColor
 
 @Composable
@@ -121,7 +121,8 @@ fun AllKnitProjects(navController: NavHostController) {
                     KnitProjectGridCell(knitProject = knitProject) {
                         viewModel.setSelectedKnitProject(knitProject)
 
-                        navController.navigate(NavigationItem.KnitProjectDetails.route)
+                        //navController.navigate(NavigationItem.KnitProjectDetails.route)
+                        navController.navigate(BottomNavItem.KnitProjectDetails.route)
                     }
                 }
             }

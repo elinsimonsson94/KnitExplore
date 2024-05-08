@@ -1,5 +1,6 @@
 package com.example.knitexplore.ui.screens.signUp
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,11 +27,12 @@ import androidx.navigation.NavHostController
 import com.example.knitexplore.ui.components.LogoImage
 import com.example.knitexplore.ui.components.PasswordInput
 import com.example.knitexplore.ui.components.TextInput
+import com.example.knitexplore.ui.shared.viewModels.AuthViewModel
 import com.example.knitexplore.ui.theme.softerOrangeColor
 
 @Composable
-fun SignUpScreen (navController: NavHostController) {
-    val viewModel : SignUpViewModel = viewModel()
+fun SignUpScreen (authViewModel: AuthViewModel) {
+
     val lifecycleOwner = LocalLifecycleOwner.current
     val context = LocalContext.current
 
@@ -43,19 +45,19 @@ fun SignUpScreen (navController: NavHostController) {
     ) {
         LogoImage()
         SignInTitle()
-        RegisterForm(viewModel = viewModel, navController)
-        SignUpBtn(viewModel = viewModel, navController)
+        RegisterForm(authViewModel)
+        SignUpBtn( authViewModel)
     }
-    viewModel.toastMessage.observe(lifecycleOwner) { message ->
-        if (!viewModel.showedToastMessage) {
+    authViewModel.toastMessage.observe(lifecycleOwner) { message ->
+        if (!authViewModel.showedToastMessage) {
             Toast.makeText(context, message, Toast.LENGTH_LONG).show()
-            viewModel.showedToastMessage = true
+            authViewModel.showedToastMessage = true
         }
     }
 }
 
 @Composable
-fun AlreadyHaveAccount (navController: NavHostController) {
+fun AlreadyHaveAccount (viewModel: AuthViewModel) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -69,18 +71,17 @@ fun AlreadyHaveAccount (navController: NavHostController) {
                 fontWeight = FontWeight.Bold,
                 color = softerOrangeColor),
             modifier = Modifier.clickable {
-                navController.navigateUp()
+                viewModel.toggleSignUpScreenVisibility()
             }
         )
     }
 }
 
 @Composable
-fun SignUpBtn (viewModel: SignUpViewModel, navController: NavHostController) {
+fun SignUpBtn (viewModel: AuthViewModel) {
     Button(
         onClick = {
-                  viewModel.validateAndSignUp(navController)
-            //viewModel.signInEmailAndPassword(navController)
+                  viewModel.validateAndSignUp()
         },
         modifier = Modifier
             .fillMaxWidth()
@@ -103,17 +104,17 @@ fun SignInTitle() {
 }
 
 @Composable
-fun RegisterForm(viewModel: SignUpViewModel, navController: NavHostController) {
+fun RegisterForm( viewModel: AuthViewModel) {
     Column {
         TextInput(
-            value = viewModel.email,
+            value = viewModel.emailSignUp,
             label = "Enter your email",
-            onValueChange = { viewModel.email = it }
+            onValueChange = { viewModel.emailSignUp = it }
         )
         PasswordInput(
-            value = viewModel.password ,
+            value = viewModel.passwordSignUp ,
             label = "Enter password",
-            onValueChange = { viewModel.password = it }
+            onValueChange = { viewModel.passwordSignUp = it }
         )
         PasswordInput(
             value = viewModel.repeatPassword,
@@ -131,7 +132,7 @@ fun RegisterForm(viewModel: SignUpViewModel, navController: NavHostController) {
             label = "Your last name",
             onValueChange = { viewModel.lastName = it }
         )
-        AlreadyHaveAccount(navController = navController)
+        AlreadyHaveAccount(viewModel)
     }
 
 }

@@ -5,7 +5,6 @@ import com.example.knitexplore.data.KnitProject
 object KnitProjectViewModel {
     private var knitProject : KnitProject? = null
 
-
     fun getInstance() : KnitProject? {
         if (knitProject == null) {
             return null
