@@ -23,7 +23,7 @@ fun BottomNavGraph(navController: NavHostController, authViewModel: AuthViewMode
             AllKnitProjects(navController = navController)
         }
         composable(BottomNavItem.UserPage.route) {
-            UserScreen()
+            UserScreen(navController, authViewModel)
         }
         composable(BottomNavItem.AddKnitProject.route) {
             val isEditing = it.arguments?.getString("isEditing")?.toBoolean() ?: false

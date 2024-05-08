@@ -47,6 +47,12 @@ class AuthViewModel : ViewModel() {
         checkIfLoggedIn()
     }
 
+    fun logOut() {
+        viewModelScope.launch {
+            _isLoggedIn.emit(false)
+        }
+    }
+
     fun toggleSignUpScreenVisibility() {
         viewModelScope.launch {
             _showSignUpScreen.emit(!_showSignUpScreen.value)
