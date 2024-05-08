@@ -48,18 +48,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.example.knitexplore.data.BottomNavItem
 import com.example.knitexplore.data.KnitProject
-import com.example.knitexplore.data.NavigationItem
 import com.example.knitexplore.ui.theme.softerOrangeColor
 
 @Composable
 fun AllKnitProjects(navController: NavHostController) {
     val viewModel: AllKnitProjectsViewModel = viewModel()
-    val knitProjects by viewModel.knitProjects.observeAsState(initial = emptyList())
     viewModel.fetchKnitProjects()
+    val knitProjects by viewModel.knitProjects.observeAsState(initial = emptyList())
     val searchText by viewModel.searchText.collectAsState()
-    val isSearching by viewModel.isSearching.collectAsState()
-    val knitProjectsTest by viewModel.knitProjectList.collectAsState()
 
 
     Scaffold(
@@ -68,21 +66,6 @@ fun AllKnitProjects(navController: NavHostController) {
                 searchText = searchText,
                 onSearchTextChange = viewModel::onSearchTextChange
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    viewModel.navigateToAddKnitProject(navController)
-                },
-                shape = CircleShape,
-                containerColor = softerOrangeColor
-            ) {
-                Icon(
-                    Icons.Filled.Add,
-                    contentDescription = "Add",
-                    tint = Color.White
-                )
-            }
         }
     ) { innerPadding ->
 
@@ -121,7 +104,8 @@ fun AllKnitProjects(navController: NavHostController) {
                     KnitProjectGridCell(knitProject = knitProject) {
                         viewModel.setSelectedKnitProject(knitProject)
 
-                        navController.navigate(NavigationItem.KnitProjectDetails.route)
+                        //navController.navigate(NavigationItem.KnitProjectDetails.route)
+                        navController.navigate(BottomNavItem.KnitProjectDetails.route)
                     }
                 }
             }

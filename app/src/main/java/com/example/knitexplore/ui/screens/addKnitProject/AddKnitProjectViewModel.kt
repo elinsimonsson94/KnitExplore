@@ -232,6 +232,7 @@ class AddKnitProjectViewModel : ViewModel() {
     }
 
     private fun saveKnitProjectToFirebase(imageUrl: String) {
+        Log.d("!!!", "saveKnit körs")
         val currentUser = auth.currentUser
         val needleSizeList = createNeedleList()
         val yarnList = createYarnList()
@@ -346,16 +347,21 @@ class AddKnitProjectViewModel : ViewModel() {
 
 
     fun saveOrUpdateFirebaseData () {
+
         if (isEditing && imageUpdated) {
+            Log.d("!!!", "editing och ny image")
             uploadImage() { downloadUrl ->
                 deleteOldImage()
                 updateFirebase(downloadUrl)
             }
         } else if (isEditing && !imageUpdated) {
+            Log.d("!!!", "editing och ingen ny image")
             val oldImage = knitProject?.imageUrl.toString()
             updateFirebase(oldImage)
         } else {
+            Log.d("!!!", "ny projekt")
             uploadImage { downloadUrl ->
+                Log.d("!!!", "ny bild: $downloadUrl")
                 saveKnitProjectToFirebase(downloadUrl)
             }
         }
