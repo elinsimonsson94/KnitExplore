@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.knitexplore.data.BottomNavItem
-import com.example.knitexplore.ui.screens.allKnitProjects.KnitProjectGridCell
+import com.example.knitexplore.ui.components.KnitProjectGridCell
 import com.example.knitexplore.ui.shared.viewModels.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

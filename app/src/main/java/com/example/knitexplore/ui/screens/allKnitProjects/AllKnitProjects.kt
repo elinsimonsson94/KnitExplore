@@ -49,8 +49,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.data.BottomNavItem
-import com.example.knitexplore.data.KnitProject
-import com.example.knitexplore.ui.theme.softerOrangeColor
+import com.example.knitexplore.ui.components.KnitProjectGridCell
 
 @Composable
 fun AllKnitProjects(navController: NavHostController) {
@@ -103,8 +102,6 @@ fun AllKnitProjects(navController: NavHostController) {
                 itemsIndexed(filteredProjects) { _, knitProject ->
                     KnitProjectGridCell(knitProject = knitProject) {
                         viewModel.setSelectedKnitProject(knitProject)
-
-                        //navController.navigate(NavigationItem.KnitProjectDetails.route)
                         navController.navigate(BottomNavItem.KnitProjectDetails.route)
                     }
                 }
@@ -160,71 +157,3 @@ fun SearchBar(searchText: String, onSearchTextChange: (String) -> Unit) {
     )
 }
 
-
-@Composable
-fun KnitProjectGridCell(knitProject: KnitProject, knitProjectPressed: () -> Unit) {
-
-    Column(
-        modifier = Modifier
-            .padding(vertical = 10.dp)
-            .clickable {
-                knitProjectPressed()
-            },
-    ) {
-        KnitProjectImage(imageUrl = knitProject.imageUrl)
-        KnitProjectPatternName(patterName = knitProject.patternName)
-    }
-
-}
-
-@Composable
-fun KnitProjectPatternName(patterName: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = patterName,
-            style = TextStyle(
-                fontSize = 18.sp,
-
-                )
-        )
-    }
-}
-
-@Composable
-fun KnitProjectImage(imageUrl: String) {
-    var imageIsLoading by remember { mutableStateOf(false) }
-    var imageLoadFailed by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = "Knit Project image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .aspectRatio(1f),
-
-            onLoading = { imageIsLoading = true },
-            onSuccess = { imageIsLoading = false },
-            onError = { imageLoadFailed = true }
-        )
-
-        if (imageIsLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-        if (imageLoadFailed) {
-            Log.d("!!!", "fail to loading images")
-        }
-    }
-}
