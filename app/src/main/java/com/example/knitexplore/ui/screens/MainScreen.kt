@@ -7,6 +7,9 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.Icon
@@ -21,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -32,6 +36,7 @@ import com.example.knitexplore.navigation.BottomNavGraph
 import com.example.knitexplore.ui.screens.signIn.SignInScreen
 import com.example.knitexplore.ui.screens.signUp.SignUpScreen
 import com.example.knitexplore.ui.shared.viewModels.AuthViewModel
+import com.example.knitexplore.ui.theme.softerOrangeColor
 
 @Composable
 fun MainScreen(navController: NavHostController) {
@@ -79,12 +84,11 @@ fun BottomBar(navController: NavHostController) {
             } else {
                 tween(durationMillis = 300, easing = LinearOutSlowInEasing)
             }
-        }
+        }, label = ""
     ) {
         if (it) 1f else 0f
     }
 
-    // Visa bara BottomBar om areTabsVisible är sant
     if (bottomBarAlpha > 0) {
         BottomNavigation(
             backgroundColor = Color.White,
@@ -109,10 +113,9 @@ fun RowScope.AddItem(
 ) {
 
     BottomNavigationItem(
-        label = {
+        /*label = {
             Text(text = screen.label)
-        },
-
+        },*/
         selected = currentDestination?.hierarchy?.any {
             it.route == screen.route
         } == true,
@@ -130,10 +133,25 @@ fun RowScope.AddItem(
                     launchSingleTop = true
                 }
             }
-
         },
-        icon = { Icon(imageVector = screen.icon, contentDescription = "Navigation Icon") }
+        icon = {
+
+            if (currentDestination?.hierarchy?.any { it.route == screen.route } == true) {
+                Icon(
+                    imageVector = screen.selectedIcon,
+                    contentDescription = "Selected Navigation Icon",
+                    tint = softerOrangeColor,
+                    modifier = Modifier
+                        .size(40.dp)
+                )
+            } else {
+                Icon(imageVector = screen.icon,
+                    contentDescription = "Navigation Icon",
+                    tint = softerOrangeColor,
+                    modifier = Modifier
+                        .size(40.dp)
+                )
+            }
+        }
     )
-
-
 }
