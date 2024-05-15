@@ -20,6 +20,7 @@ import coil.compose.AsyncImage
 
 @Composable
 fun KnitProjectImage(imageUrl: String) {
+    Log.d("!!!", "imageUrl: $imageUrl")
     var imageIsLoading by remember { mutableStateOf(false) }
     var imageLoadFailed by remember { mutableStateOf(false) }
 
