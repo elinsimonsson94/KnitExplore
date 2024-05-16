@@ -1,6 +1,6 @@
 package com.example.knitexplore.ui.shared.viewModels
 
-import com.example.knitexplore.data.KnitProject
+import com.example.knitexplore.model.KnitProject
 
 object KnitProjectViewModel {
     private var knitProject : KnitProject? = null

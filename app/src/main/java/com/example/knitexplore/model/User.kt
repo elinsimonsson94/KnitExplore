@@ -1,4 +1,4 @@
-package com.example.knitexplore.data
+package com.example.knitexplore.model
 
 import com.google.firebase.firestore.DocumentId
 

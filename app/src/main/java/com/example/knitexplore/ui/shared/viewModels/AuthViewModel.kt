@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.knitexplore.data.User
+import com.example.knitexplore.model.User
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
@@ -20,8 +20,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel : ViewModel() {
-    val auth : FirebaseAuth = Firebase.auth
-    val db = Firebase.firestore
+    private val auth : FirebaseAuth = Firebase.auth
+    private val db = Firebase.firestore
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn = _isLoggedIn.asStateFlow()
     private val _showSignUpScreen = MutableStateFlow(false)
@@ -43,8 +43,15 @@ class AuthViewModel : ViewModel() {
     var showedToastMessage by mutableStateOf(false)
 
     init {
-        //auth.signOut()
         checkIfLoggedIn()
+    }
+
+    fun logOut() {
+        auth.signOut()
+
+        viewModelScope.launch {
+            _isLoggedIn.emit(false)
+        }
     }
 
     fun toggleSignUpScreenVisibility() {
@@ -56,40 +63,47 @@ class AuthViewModel : ViewModel() {
         val currentUser = auth.currentUser
 
         if (currentUser != null) {
-            viewModelScope.launch {
-                Log.d("!!!", "isLogged in true")
-                _isLoggedIn.emit(true)
-            }
+            handleLogin()
         } else {
-            viewModelScope.launch {
-                Log.d("!!!", "isLogged in false")
-                _isLoggedIn.emit(false)
-            }
+            logOut()
         }
     }
-    fun logIn() {
+    private fun handleLogin() {
         viewModelScope.launch {
             _isLoggedIn.emit(true)
         }
+        email = ""
+        password = ""
+    }
+
+    private fun handleSignUp() {
+        viewModelScope.launch {
+            _isLoggedIn.emit(true)
+            _showSignUpScreen.emit(false)
+        }
+
+        emailSignUp = ""
+        passwordSignUp = ""
+        repeatPassword = ""
+        firstName = ""
+        lastName = ""
     }
 
     fun validateAndSignIn() {
         showedToastMessageLogIn = false // Resets showedToastMessage to false if the user has previously tried and failed to log in
         if (email != "" && password != "") {
-            signIn()
+            signInWithEmailAndPassword()
         } else {
             toastMessageLogIn.value = "You need to enter your Email and Password."
         }
     }
 
-    fun signIn() {
+    private fun signInWithEmailAndPassword() {
 
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    viewModelScope.launch {
-                        _isLoggedIn.emit(true)
-                    }
+                    handleLogin()
                 } else {
                     val errorMessage = when (task.exception) {
                         is FirebaseAuthInvalidUserException -> "Invalid email or password. Please try again."
@@ -106,7 +120,7 @@ class AuthViewModel : ViewModel() {
         showedToastMessage = false
         if (emailSignUp != "" && passwordSignUp != "" && firstName != "" && lastName != ""
             && passwordSignUp == repeatPassword) {
-            signInEmailAndPassword()
+            createAccountWithEmailAndPassword()
         } else if (passwordSignUp != repeatPassword) {
             toastMessage.value = "Passwords do not match"
         } else {
@@ -114,7 +128,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    private fun signInEmailAndPassword() {
+    private fun createAccountWithEmailAndPassword() {
         auth.createUserWithEmailAndPassword(emailSignUp, passwordSignUp)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -144,10 +158,7 @@ class AuthViewModel : ViewModel() {
         userRef.set(user)
             .addOnSuccessListener {
                 Log.d("!!!", "registered user successfully")
-                viewModelScope.launch {
-                    _isLoggedIn.emit(true)
-                    _showSignUpScreen.emit(false)
-                }
+                handleSignUp()
             }
             .addOnFailureListener { e ->
                 Log.w("!!!", "Error register the user: $e")

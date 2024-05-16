@@ -57,7 +57,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
-import com.example.knitexplore.data.NeedleYarnType
+import com.example.knitexplore.model.NeedleYarnType
 import com.example.knitexplore.ui.components.TextInput
 import com.example.knitexplore.ui.theme.softerOrangeColor
 import com.google.firebase.Firebase
@@ -401,7 +401,9 @@ fun GaugeInputs(viewModel: AddKnitProjectViewModel) {
         Spacer(modifier = Modifier.width(5.dp))
         GaugeInput(
             value = if (viewModel.rowsAmount == 0) "" else viewModel.rowsAmount.toString(),
-            onValueChange = { newText -> viewModel.rowsAmount = newText.toInt() }
+            onValueChange = {
+                newText -> viewModel.rowsAmount = if (newText.isEmpty()) 0 else newText.toInt()
+            }
         )
         Spacer(modifier = Modifier.width(5.dp))
         Text(text = "rows")
@@ -431,6 +433,7 @@ fun ProjectNotesInput(
 
 @Composable
 fun GaugeInput(value: String, onValueChange: (String) -> Unit) {
+    Log.d("!!!", "gaugeInput: ")
 
     OutlinedTextField(
         value = value,

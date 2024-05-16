@@ -2,15 +2,13 @@ package com.example.knitexplore.ui.screens.knitProjectDetails
 
 import android.util.Log
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
-import com.example.knitexplore.data.BottomNavItem
-import com.example.knitexplore.data.KnitProject
+import com.example.knitexplore.model.BottomNavItem
+import com.example.knitexplore.model.KnitProject
 import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth

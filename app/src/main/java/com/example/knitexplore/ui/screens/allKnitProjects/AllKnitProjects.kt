@@ -1,29 +1,22 @@
 package com.example.knitexplore.ui.screens.allKnitProjects
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -34,23 +27,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
-import com.example.knitexplore.data.BottomNavItem
-import com.example.knitexplore.data.KnitProject
-import com.example.knitexplore.ui.theme.softerOrangeColor
+import com.example.knitexplore.model.BottomNavItem
+import com.example.knitexplore.ui.components.KnitProjectGridCell
 
 @Composable
 fun AllKnitProjects(navController: NavHostController) {
@@ -103,10 +89,11 @@ fun AllKnitProjects(navController: NavHostController) {
                 itemsIndexed(filteredProjects) { _, knitProject ->
                     KnitProjectGridCell(knitProject = knitProject) {
                         viewModel.setSelectedKnitProject(knitProject)
-
-                        //navController.navigate(NavigationItem.KnitProjectDetails.route)
                         navController.navigate(BottomNavItem.KnitProjectDetails.route)
                     }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(50.dp))
                 }
             }
         }
@@ -160,71 +147,3 @@ fun SearchBar(searchText: String, onSearchTextChange: (String) -> Unit) {
     )
 }
 
-
-@Composable
-fun KnitProjectGridCell(knitProject: KnitProject, knitProjectPressed: () -> Unit) {
-
-    Column(
-        modifier = Modifier
-            .padding(vertical = 10.dp)
-            .clickable {
-                knitProjectPressed()
-            },
-    ) {
-        KnitProjectImage(imageUrl = knitProject.imageUrl)
-        KnitProjectPatternName(patterName = knitProject.patternName)
-    }
-
-}
-
-@Composable
-fun KnitProjectPatternName(patterName: String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = patterName,
-            style = TextStyle(
-                fontSize = 18.sp,
-
-                )
-        )
-    }
-}
-
-@Composable
-fun KnitProjectImage(imageUrl: String) {
-    var imageIsLoading by remember { mutableStateOf(false) }
-    var imageLoadFailed by remember { mutableStateOf(false) }
-
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = "Knit Project image",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .aspectRatio(1f),
-
-            onLoading = { imageIsLoading = true },
-            onSuccess = { imageIsLoading = false },
-            onError = { imageLoadFailed = true }
-        )
-
-        if (imageIsLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
-            )
-        }
-        if (imageLoadFailed) {
-            Log.d("!!!", "fail to loading images")
-        }
-    }
-}
