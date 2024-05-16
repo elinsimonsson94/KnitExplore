@@ -50,7 +50,6 @@ fun KnitProjectDetailsScreen(navController: NavHostController) {
             modifier = Modifier.fillMaxSize()
         ) {
             item {
-                Log.d("!!!", "image: ${selectedKnitProject?.imageUrl}")
                 LargeImage(url = selectedKnitProject!!.imageUrl)
             }
             item {
@@ -81,6 +80,7 @@ fun KnitProjectDetailsScreen(navController: NavHostController) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 BackBtn(navController = navController)
+                Spacer(modifier = Modifier.height(50.dp))
             }
         }
     }

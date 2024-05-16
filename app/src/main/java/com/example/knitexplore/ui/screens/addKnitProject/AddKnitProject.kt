@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -41,15 +40,12 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -61,12 +57,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
-import com.example.knitexplore.data.NeedleYarnType
-import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
+import com.example.knitexplore.model.NeedleYarnType
+import com.example.knitexplore.ui.components.TextInput
 import com.example.knitexplore.ui.theme.softerOrangeColor
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
-import com.google.protobuf.FieldType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -207,7 +202,7 @@ fun AddKnitProject(navController: NavHostController, isEditing: Boolean) {
                     })
             }
             item {
-                SaveBtn(viewModel = viewModel)
+                SaveBtn(viewModel = viewModel, navController = navController)
                 DeleteBtn(viewModel = viewModel, navController = navController)
             }
             item {
@@ -268,7 +263,7 @@ fun YarnInputs(viewModel: AddKnitProjectViewModel) {
             needleYarnType = NeedleYarnType.YARN,
             viewModel = viewModel,
             isFirstField = true,
-            value = viewModel.yarn1.toString(),
+            value = viewModel.yarn1,
             onValueChange = { newValue ->
                 viewModel.yarn1 = newValue
             },
@@ -311,6 +306,10 @@ fun TextFieldWithClearIcon(
     needleYarnType: NeedleYarnType
 ) {
 
+    var keyboardType = KeyboardType.Number
+    if (needleYarnType == NeedleYarnType.YARN) {
+        keyboardType = KeyboardType.Text
+    }
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -335,7 +334,7 @@ fun TextFieldWithClearIcon(
                 .padding(horizontal = 20.dp, vertical = 5.dp),
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.Number
+                keyboardType = keyboardType
             ),
             trailingIcon = {
                 if (!isFirstField) {
@@ -402,7 +401,9 @@ fun GaugeInputs(viewModel: AddKnitProjectViewModel) {
         Spacer(modifier = Modifier.width(5.dp))
         GaugeInput(
             value = if (viewModel.rowsAmount == 0) "" else viewModel.rowsAmount.toString(),
-            onValueChange = { newText -> viewModel.rowsAmount = newText.toInt() }
+            onValueChange = {
+                newText -> viewModel.rowsAmount = if (newText.isEmpty()) 0 else newText.toInt()
+            }
         )
         Spacer(modifier = Modifier.width(5.dp))
         Text(text = "rows")
@@ -432,6 +433,7 @@ fun ProjectNotesInput(
 
 @Composable
 fun GaugeInput(value: String, onValueChange: (String) -> Unit) {
+    Log.d("!!!", "gaugeInput: ")
 
     OutlinedTextField(
         value = value,
@@ -503,14 +505,14 @@ fun DeleteBtn(viewModel: AddKnitProjectViewModel, navController: NavHostControll
 }
 
 @Composable
-fun SaveBtn(viewModel: AddKnitProjectViewModel) {
+fun SaveBtn(viewModel: AddKnitProjectViewModel, navController: NavHostController) {
 
     Row (
         modifier = Modifier.padding(top = 10.dp)
     ) {
         Button(
             onClick = {
-                viewModel.saveOrUpdateFirebaseData()
+                viewModel.saveOrUpdateFirebaseData(navController)
             },
             modifier = Modifier.width(200.dp),
             colors = ButtonDefaults.buttonColors(
@@ -527,34 +529,6 @@ fun SaveBtn(viewModel: AddKnitProjectViewModel) {
                 fontSize = 16.sp
             )
         }
-    }
-}
-
-@Composable
-fun TextInput(value: String, label: String, onValueChange: (String) -> Unit) {
-
-    Row {
-        TextField(
-            value = value,
-            onValueChange = { newText ->
-                onValueChange(newText)
-            },
-            label = {
-                Text(label)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 5.dp),
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next
-            ),
-
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.Transparent,
-                unfocusedContainerColor = Color.Transparent,
-                disabledContainerColor = Color.Transparent,
-            )
-        )
     }
 }
 

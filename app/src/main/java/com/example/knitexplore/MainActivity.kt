@@ -8,8 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.example.knitexplore.navigation.AppNavHost
-import com.example.knitexplore.ui.screens.homeScreen.HomeScreen
+import com.example.knitexplore.ui.screens.MainScreen
 import com.example.knitexplore.ui.theme.KnitExploreTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,9 +22,9 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    val navController = rememberNavController()
+                    MainScreen(navController)
 
-                    AppNavHost(navController = rememberNavController())
-                    //AddKnitProject()
                 }
             }
         }
