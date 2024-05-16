@@ -231,7 +231,7 @@ class AddKnitProjectViewModel : ViewModel() {
         imageUpdated = true
     }
 
-    private fun saveKnitProjectToFirebase(imageUrl: String) {
+    private fun saveKnitProjectToFirebase(imageUrl: String, navController: NavHostController) {
         Log.d("!!!", "saveKnit körs")
         val currentUser = auth.currentUser
         val needleSizeList = createNeedleList()
@@ -255,6 +255,7 @@ class AddKnitProjectViewModel : ViewModel() {
             db.collection("knitProjects")
                 .add(newKnitProject)
                 .addOnSuccessListener {
+                    navController.navigateUp()
                     Log.d("!!!", "DocumentSnapshot successfully written")
                 }
                 .addOnFailureListener { error ->
@@ -346,28 +347,28 @@ class AddKnitProjectViewModel : ViewModel() {
     }
 
 
-    fun saveOrUpdateFirebaseData () {
+    fun saveOrUpdateFirebaseData (navController: NavHostController) {
 
         if (isEditing && imageUpdated) {
             Log.d("!!!", "editing och ny image")
             uploadImage() { downloadUrl ->
                 deleteOldImage()
-                updateFirebase(downloadUrl)
+                updateFirebase(downloadUrl, navController)
             }
         } else if (isEditing && !imageUpdated) {
             Log.d("!!!", "editing och ingen ny image")
             val oldImage = knitProject?.imageUrl.toString()
-            updateFirebase(oldImage)
+            updateFirebase(oldImage, navController)
         } else {
             Log.d("!!!", "ny projekt")
             uploadImage { downloadUrl ->
                 Log.d("!!!", "ny bild: $downloadUrl")
-                saveKnitProjectToFirebase(downloadUrl)
+                saveKnitProjectToFirebase(downloadUrl, navController)
             }
         }
     }
 
-    fun updateFirebase(imageUrl: String) {
+    fun updateFirebase(imageUrl: String, navController: NavHostController) {
         val needleSizes = createNeedleList()
         val yarns = createYarnList()
 
@@ -396,6 +397,7 @@ class AddKnitProjectViewModel : ViewModel() {
                     .addOnSuccessListener {
                         Log.d("!!!", "DocumentSnapShot successfully written")
                         knitProjectViewModel.setSelectedKnitProject(knitProject1)
+                        navController.navigateUp()
                     }
                     .addOnFailureListener { error ->
                         Log.d("!!!", "Error writing document", error)

@@ -202,7 +202,7 @@ fun AddKnitProject(navController: NavHostController, isEditing: Boolean) {
                     })
             }
             item {
-                SaveBtn(viewModel = viewModel)
+                SaveBtn(viewModel = viewModel, navController = navController)
                 DeleteBtn(viewModel = viewModel, navController = navController)
             }
             item {
@@ -505,14 +505,14 @@ fun DeleteBtn(viewModel: AddKnitProjectViewModel, navController: NavHostControll
 }
 
 @Composable
-fun SaveBtn(viewModel: AddKnitProjectViewModel) {
+fun SaveBtn(viewModel: AddKnitProjectViewModel, navController: NavHostController) {
 
     Row (
         modifier = Modifier.padding(top = 10.dp)
     ) {
         Button(
             onClick = {
-                viewModel.saveOrUpdateFirebaseData()
+                viewModel.saveOrUpdateFirebaseData(navController)
             },
             modifier = Modifier.width(200.dp),
             colors = ButtonDefaults.buttonColors(
