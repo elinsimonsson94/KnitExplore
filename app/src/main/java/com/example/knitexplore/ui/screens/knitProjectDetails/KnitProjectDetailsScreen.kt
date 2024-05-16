@@ -80,6 +80,7 @@ fun KnitProjectDetailsScreen(navController: NavHostController) {
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 BackBtn(navController = navController)
+                Spacer(modifier = Modifier.height(50.dp))
             }
         }
     }

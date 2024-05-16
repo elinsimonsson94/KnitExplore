@@ -1,4 +1,4 @@
-package com.example.knitexplore.data
+package com.example.knitexplore.model
 
 enum class NeedleYarnType {
     NEEDLE_SIZE,

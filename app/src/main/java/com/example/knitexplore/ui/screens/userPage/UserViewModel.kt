@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
-import com.example.knitexplore.data.KnitProject
+import com.example.knitexplore.model.KnitProject
 import com.example.knitexplore.ui.shared.viewModels.KnitProjectViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth

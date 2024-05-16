@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
-import com.example.knitexplore.data.BottomNavItem
+import com.example.knitexplore.model.BottomNavItem
 import com.example.knitexplore.ui.screens.addKnitProject.AddKnitProject
 import com.example.knitexplore.ui.screens.allKnitProjects.AllKnitProjects
 import com.example.knitexplore.ui.screens.knitProjectDetails.KnitProjectDetailsScreen

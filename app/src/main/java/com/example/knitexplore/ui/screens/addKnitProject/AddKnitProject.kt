@@ -57,7 +57,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.knitexplore.R
-import com.example.knitexplore.data.NeedleYarnType
+import com.example.knitexplore.model.NeedleYarnType
 import com.example.knitexplore.ui.components.TextInput
 import com.example.knitexplore.ui.theme.softerOrangeColor
 import com.google.firebase.Firebase
